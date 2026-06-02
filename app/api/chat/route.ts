@@ -26,7 +26,10 @@ import path from "path";
 import { getMarineConditions } from "@/tools/marineWeather";
 
 // Tell Next.js this route can take up to 60 seconds (AI calls can be slow)
-export const maxDuration = 60;
+// Vercel Hobby (free) plan caps serverless functions at 10s.
+// Vercel Pro allows up to 300s. Set to 30: works on Pro, silently capped to 10 on Hobby.
+// gpt-5-mini + one tool call typically completes in 4-8s, so Hobby is fine in practice.
+export const maxDuration = 30;
 
 // Set up the AI model using GitHub Models
 // GitHub Models is accessed via your GitHub Personal Access Token

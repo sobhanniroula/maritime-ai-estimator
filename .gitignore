@@ -34,5 +34,6 @@ Thumbs.db
 *.tsbuildinfo
 next-env.d.ts
 
-# ── Guide files ───────────────────────────────────
-guide.md
+# ── References files and internal planning docs ───────────────────────────────
+references/*
+documentations/*
