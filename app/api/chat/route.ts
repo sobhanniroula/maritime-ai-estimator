@@ -1,7 +1,7 @@
 /**
  * app/api/chat/route.ts
  *
- * This is the BRAIN of the application — the AI agent endpoint.
+ * This is the BRAIN of the application: the AI agent endpoint.
  *
  * HOW IT WORKS (step by step):
  * 1. The user clicks on the map → coordinates are sent here as a chat message
@@ -12,7 +12,7 @@
  * 6. The AI reads the weather data + product specs and writes a recommendation
  * 7. We stream the response back to the browser (character by character, live)
  *
- * KEY CONCEPT — "Tool Calling":
+ * KEY CONCEPT: "Tool Calling":
  * Instead of the AI making something up, we give it a real function it can call.
  * The AI says "I need weather data for lat X, lng Y" → our code fetches it → AI uses it.
  * This is what makes the response grounded in real data, not just hallucination.
@@ -44,13 +44,17 @@ export async function POST(req: Request) {
 
   // Read the product knowledge base from disk
   // This is a plain JSON file we can edit easily during the challenge demo
-  const productsFilePath = path.join(process.cwd(), "knowledge", "products.json");
+  const productsFilePath = path.join(
+    process.cwd(),
+    "knowledge",
+    "products.json",
+  );
   const productSpecs = fs.readFileSync(productsFilePath, "utf8");
 
   // streamText is the core function from the Vercel AI SDK
   // It sends the AI's response as a stream so the UI shows it in real time
   const result = await streamText({
-    model: githubModel("gpt-4o-mini"),
+    model: githubModel("gpt-5-mini"),
     messages,
 
     // The system prompt defines the AI's personality and rules
@@ -59,7 +63,7 @@ export async function POST(req: Request) {
 
 YOUR MISSION: Analyze a coastal location's environmental conditions and recommend the right Bluet floating infrastructure product for the client's needs.
 
-PROTOCOL — follow these steps in order:
+PROTOCOL - follow these steps in order:
 1. When given GPS coordinates, ALWAYS call the 'getMarineConditions' tool first to get real environmental data.
 2. Compare the conditions (wave height, wind, ice risk) against the product constraints below.
 3. Recommend the most suitable product with clear technical reasoning.
@@ -69,7 +73,7 @@ PROTOCOL — follow these steps in order:
 BLUET PRODUCT DATABASE:
 ${productSpecs}
 
-RESPONSE FORMAT — always structure your reply like this:
+RESPONSE FORMAT - always structure your reply like this:
 **📍 Location Assessment**
 [Brief description of the location type: sheltered bay, open coast, archipelago, etc.]
 

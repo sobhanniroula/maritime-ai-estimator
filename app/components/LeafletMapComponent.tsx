@@ -24,8 +24,10 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 
-// Import Leaflet's default CSS — this provides marker icons and map styling
-import "leaflet/dist/leaflet.css";
+// Import Leaflet's default CSS: this provides marker icons and map styling
+if (typeof window !== "undefined") {
+  require("leaflet/dist/leaflet.css");
+}
 
 // FIX: Leaflet's default marker icons break in Next.js because of how webpack
 // handles asset imports. We manually point to the CDN-hosted icon images instead.
@@ -60,7 +62,7 @@ function MapClickHandler({
       onLocationSelect(e.latlng.lat, e.latlng.lng);
     },
   });
-  return null; // This component renders nothing — it just listens
+  return null; // This component renders nothing, it just listens
 }
 
 interface LeafletMapComponentProps {
@@ -92,7 +94,7 @@ export default function LeafletMapComponent({
       style={{ background: "#1a2a3a" }}
     >
       {/* TileLayer provides the map imagery
-          We use CartoDB's dark-themed tiles — they look great with our dark UI
+          We use CartoDB's dark-themed tiles, they look great with our dark UI
           and are free for non-commercial use */}
       <TileLayer
         url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"

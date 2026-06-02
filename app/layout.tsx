@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Maritime AI Estimator | Bluet Oy",
+  title: "Maritime AI Estimator",
   description:
     "AI-powered floating infrastructure cost estimator. Click a coastal location to get instant product recommendations and budget estimates.",
 };
@@ -17,7 +17,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full">
-      <body className={`${inter.className} h-full`}>{children}</body>
+      {/* suppressHydrationWarning: silences warnings caused by browser extensions
+          (e.g. Grammarly) that inject extra attributes onto <body> after React renders */}
+      <body className={`${inter.className} h-full`} suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }

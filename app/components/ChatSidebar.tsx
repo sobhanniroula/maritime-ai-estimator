@@ -32,8 +32,14 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
   // useChat is the core hook from the Vercel AI SDK
   // It handles: sending messages, receiving streaming responses, managing state
   // api: points to our Next.js API route at /api/chat
-  const { messages, input, handleInputChange, handleSubmit, append, isLoading } =
-    useChat({ api: "/api/chat" });
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    append,
+    isLoading,
+  } = useChat({ api: "/api/chat" });
 
   // When the user clicks on the map, selectedLocation changes
   // We react to that change by automatically sending an analysis request to the AI
@@ -82,7 +88,7 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
         </p>
       </div>
 
-      {/* Message list — scrollable area */}
+      {/* Message list: scrollable area */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {/* Empty state shown before any interaction */}
         {messages.length === 0 && (
@@ -94,7 +100,7 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
             <p className="text-slate-600 text-xs leading-relaxed">
               Click anywhere on the map to start an AI-powered site analysis.
               The AI will assess wave conditions, wind, ice risk, and recommend
-              the right Bluet solution.
+              the right solution.
             </p>
           </div>
         )}
@@ -103,7 +109,8 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
         {messages.map((message) => {
           // Only render user and assistant messages in the UI
           // Other roles (like "data") are internal SDK state
-          if (message.role !== "user" && message.role !== "assistant") return null;
+          if (message.role !== "user" && message.role !== "assistant")
+            return null;
 
           const isUser = message.role === "user";
 
@@ -130,14 +137,14 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
                     </div>
                   )}
 
-                {/* The actual message content — whitespace-pre-wrap preserves line breaks */}
+                {/* The actual message content: whitespace-pre-wrap preserves line breaks */}
                 <div className="whitespace-pre-wrap">{message.content}</div>
               </div>
             </div>
           );
         })}
 
-        {/* Loading indicator — shown while the AI is responding */}
+        {/* Loading indicator: shown while the AI is responding */}
         {isLoading && (
           <div className="flex justify-start">
             <div className="bg-slate-800 rounded-xl rounded-bl-sm px-4 py-3 text-sm">
@@ -153,11 +160,11 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
           </div>
         )}
 
-        {/* Invisible div at the bottom — we scroll to this to always show latest message */}
+        {/* Invisible div at the bottom: we scroll to this to always show latest message */}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* "Generate Proposal" button — shown only after the AI has responded */}
+      {/* "Generate Proposal" button: shown only after the AI has responded */}
       {hasAiResponse && !isLoading && (
         <div className="px-4 py-2 border-t border-slate-800 bg-slate-900/50">
           <button
@@ -170,7 +177,7 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
         </div>
       )}
 
-      {/* Manual input area — user can ask follow-up questions */}
+      {/* Manual input area: user can ask follow-up questions */}
       <form
         onSubmit={handleSubmit}
         className="px-4 py-3 border-t border-slate-800"

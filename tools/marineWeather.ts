@@ -24,7 +24,7 @@ export interface MarineConditions {
 
 export async function getMarineConditions(
   lat: number,
-  lng: number
+  lng: number,
 ): Promise<MarineConditions> {
   const apiKey = process.env.WEATHER_API_KEY;
 
@@ -74,8 +74,11 @@ export async function getMarineConditions(
  * In Finland, the further north you go, the longer and thicker the ice season.
  */
 function computeIceRisk(lat: number): string {
-  if (lat > 64) return "High — ice typically December–April, requires Arctic-grade system";
-  if (lat > 60) return "Moderate — seasonal ice risk November–March, heavy pontoon required";
-  if (lat > 57) return "Low-moderate — occasional thin ice, standard reinforcement needed";
-  return "Low — ice rare, standard system suitable";
+  if (lat > 64)
+    return "High: ice typically December-April, requires Arctic-grade system";
+  if (lat > 60)
+    return "Moderate: seasonal ice risk November-March, heavy pontoon required";
+  if (lat > 57)
+    return "Low-moderate: occasional thin ice, standard reinforcement needed";
+  return "Low: ice rare, standard system suitable";
 }

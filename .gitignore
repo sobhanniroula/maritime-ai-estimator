@@ -9,7 +9,7 @@ out/
 build/
 dist/
 
-# ── Environment variables (NEVER commit these — they contain secrets) ─────────
+# ── Environment variables (NEVER commit these, they contain secrets) ─────────
 .env
 .env.local
 .env.development.local

@@ -9,13 +9,13 @@
       "maxWaveHeightMeters": 0.6,
       "maxWindSpeedKph": 25,
       "minWaterDepthMeters": 1.5,
-      "iceResistance": "Low — must be removed or stored ashore for winter (October–April in Finland)"
+      "iceResistance": "Low: must be removed or stored ashore for winter (October–April in Finland)"
     },
     "dimensions": {
-      "standardModule": "3m × 3m or 5m × 5m tiles",
-      "maxRecommendedConfiguration": "15m × 8m"
+      "standardModule": "3m x 3m or 5m x 5m tiles",
+      "maxRecommendedConfiguration": "15m x 8m"
     },
-    "basePriceRange": "€15,000 – €30,000",
+    "basePriceRange": "€15,000 - €30,000",
     "typicalInstallationWeeks": 1,
     "features": [
       "100% recycled HDPE floats",
@@ -35,13 +35,13 @@
       "maxWaveHeightMeters": 1.5,
       "maxWindSpeedKph": 50,
       "minWaterDepthMeters": 2.5,
-      "iceResistance": "Moderate — seasonal dismantling recommended; can withstand light ice (<10cm) with protective mooring"
+      "iceResistance": "Moderate: seasonal dismantling recommended; can withstand light ice (<10cm) with protective mooring"
     },
     "dimensions": {
-      "standardModule": "10m × 10m base sections",
-      "maxRecommendedConfiguration": "50m × 30m"
+      "standardModule": "10m x 10m base sections",
+      "maxRecommendedConfiguration": "50m x 30m"
     },
-    "basePriceRange": "€50,000 – €120,000",
+    "basePriceRange": "€50,000 - €120,000",
     "typicalInstallationWeeks": 3,
     "features": [
       "Hot-dip galvanized steel frame",
@@ -61,13 +61,13 @@
       "maxWaveHeightMeters": 2.5,
       "maxWindSpeedKph": 80,
       "minWaterDepthMeters": 4.0,
-      "iceResistance": "High — reinforced steel/concrete composite hull with active ice deflectors; rated for 30cm ice sheets"
+      "iceResistance": "High: reinforced steel/concrete composite hull with active ice deflectors; rated for 30cm ice sheets"
     },
     "dimensions": {
       "standardModule": "Custom engineering per project",
       "maxRecommendedConfiguration": "100m+ custom configurations"
     },
-    "basePriceRange": "€150,000 – €500,000+",
+    "basePriceRange": "€150,000 - €500,000+",
     "typicalInstallationWeeks": 12,
     "features": [
       "Ice-resistant reinforced hull",

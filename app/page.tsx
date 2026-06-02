@@ -1,5 +1,5 @@
 /**
- * page.tsx — Main Application Page
+ * page.tsx: Main Application Page
  *
  * This is the root page of the app. It acts as the "conductor" that:
  * 1. Holds the currently-selected map location in state
@@ -57,7 +57,7 @@ export default function Home() {
           </div>
           <div>
             <h1 className="text-white font-semibold text-sm leading-none">
-              Bluet Maritime AI Estimator
+              Maritime AI Estimator
             </h1>
             <p className="text-slate-500 text-xs mt-0.5">
               Floating Infrastructure Cost Analysis
@@ -72,18 +72,20 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Main content area — map + sidebar side by side */}
+      {/* Main content area: map + sidebar side by side */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Map area — 60% of the width */}
+        {/* Map area: 60% of the width */}
         <div className="relative flex-[6] overflow-hidden">
           <MapWrapper onLocationSelect={handleLocationSelect} />
 
           {/* Instruction overlay shown when no location has been selected yet */}
           {!selectedLocation && (
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-slate-900/90 backdrop-blur text-white text-sm px-5 py-3 rounded-xl border border-slate-700 pointer-events-none text-center">
-              <div className="font-medium">Click any coastal area to analyze</div>
+              <div className="font-medium">
+                Click any coastal area to analyze
+              </div>
               <div className="text-slate-400 text-xs mt-1">
-                AI will assess wave conditions &amp; recommend a Bluet solution
+                AI will assess wave conditions &amp; recommend a solution
               </div>
             </div>
           )}
@@ -97,13 +99,13 @@ export default function Home() {
           )}
         </div>
 
-        {/* Chat sidebar — 40% of the width */}
+        {/* Chat sidebar: 40% of the width */}
         <div className="flex-[4] overflow-hidden">
           <ChatSidebar selectedLocation={selectedLocation} />
         </div>
       </div>
 
-      {/* Proposal Preview modal — rendered on top of everything when active */}
+      {/* Proposal Preview modal: rendered on top of everything when active */}
       {showProposal && proposalContent && (
         <ProposalPreview
           content={proposalContent}
