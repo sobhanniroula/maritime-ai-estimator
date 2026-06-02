@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Override the default white body background */
+body {
+  background-color: #020817;
+  color: #f1f5f9;
+}
+
+/* Make the app fill the full viewport height without scrollbars */
+html,
+body,
+#__next {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Custom scrollbar styling for the dark theme */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
