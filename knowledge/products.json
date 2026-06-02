@@ -1,0 +1,81 @@
+[
+  {
+    "id": "bluet-ecolight",
+    "name": "Bluet EcoLight Floating Platform",
+    "category": "Residential / Light Commercial",
+    "intendedUse": "Private saunas, swimming platforms, small docks, residential leisure",
+    "description": "A lightweight, modular floating platform made from recycled HDPE. Designed for protected coastal areas, archipelago bays, and calm inland waters.",
+    "constraints": {
+      "maxWaveHeightMeters": 0.6,
+      "maxWindSpeedKph": 25,
+      "minWaterDepthMeters": 1.5,
+      "iceResistance": "Low — must be removed or stored ashore for winter (October–April in Finland)"
+    },
+    "dimensions": {
+      "standardModule": "3m × 3m or 5m × 5m tiles",
+      "maxRecommendedConfiguration": "15m × 8m"
+    },
+    "basePriceRange": "€15,000 – €30,000",
+    "typicalInstallationWeeks": 1,
+    "features": [
+      "100% recycled HDPE floats",
+      "Tool-free modular assembly",
+      "UV-resistant non-slip deck",
+      "Eco-certified materials",
+      "Lightweight for easy seasonal storage"
+    ]
+  },
+  {
+    "id": "bluet-hd-commercial",
+    "name": "Bluet HD Commercial Pontoon",
+    "category": "Commercial",
+    "intendedUse": "Floating pools, commercial saunas, waterfront restaurants, event terraces, small hotels",
+    "description": "A heavy-duty galvanized steel pontoon system for commercial-grade floating structures in moderate open-water conditions. Suitable for Finnish archipelago and protected coastal bays.",
+    "constraints": {
+      "maxWaveHeightMeters": 1.5,
+      "maxWindSpeedKph": 50,
+      "minWaterDepthMeters": 2.5,
+      "iceResistance": "Moderate — seasonal dismantling recommended; can withstand light ice (<10cm) with protective mooring"
+    },
+    "dimensions": {
+      "standardModule": "10m × 10m base sections",
+      "maxRecommendedConfiguration": "50m × 30m"
+    },
+    "basePriceRange": "€50,000 – €120,000",
+    "typicalInstallationWeeks": 3,
+    "features": [
+      "Hot-dip galvanized steel frame",
+      "Custom superstructure support",
+      "Marina-grade anchoring system",
+      "Utility connections (water, electricity, waste)",
+      "CE-certified structural load ratings"
+    ]
+  },
+  {
+    "id": "bluet-arctic-industrial",
+    "name": "Bluet Arctic Heavy-Duty System",
+    "category": "Industrial / Large-Scale",
+    "intendedUse": "Floating hotels, marine research stations, large public pools, floating urban infrastructure, exposed coastal locations",
+    "description": "Bluet's most robust solution, engineered specifically for harsh Nordic marine environments. Uses a reinforced steel–concrete composite hull with integrated ice deflectors. Designed for year-round Baltic Sea operation.",
+    "constraints": {
+      "maxWaveHeightMeters": 2.5,
+      "maxWindSpeedKph": 80,
+      "minWaterDepthMeters": 4.0,
+      "iceResistance": "High — reinforced steel/concrete composite hull with active ice deflectors; rated for 30cm ice sheets"
+    },
+    "dimensions": {
+      "standardModule": "Custom engineering per project",
+      "maxRecommendedConfiguration": "100m+ custom configurations"
+    },
+    "basePriceRange": "€150,000 – €500,000+",
+    "typicalInstallationWeeks": 12,
+    "features": [
+      "Ice-resistant reinforced hull",
+      "Permanent year-round mooring",
+      "Full utility integration (heating, water, power, sewage)",
+      "Winter operation certified",
+      "Custom architectural superstructure",
+      "Environmental impact assessment included"
+    ]
+  }
+]
