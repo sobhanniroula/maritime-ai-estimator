@@ -22,7 +22,7 @@ export default function ThemeToggle() {
           <path strokeLinecap="round" strokeLinejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
         </svg>
       )}
-      <span className="text-xs text-slate-600 dark:text-slate-300">
+      <span className="text-xs text-slate-600 dark:text-slate-300 hidden md:inline">
         {isDark ? "Light" : "Dark"}
       </span>
     </button>
