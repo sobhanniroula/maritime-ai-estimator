@@ -33,8 +33,26 @@ interface WizardData {
   sizeCategory: SizeCategory | null;
   poolType: PoolType | null;
   usagePeriod: UsagePeriod | null;
+  // Bathymetry / water depth
   waterDepth: string;
+  waterLevelHW: string;
+  waterLevelNW: string;
+  tidalBehaviour: string;
+  // Waves
   waveHeight: string;
+  wavePeriod: string;
+  waveDirection: string;
+  vesselTrafficWaves: string;
+  // Current
+  currentSpeed: string;
+  currentDirection: string;
+  // Riverbed / soil
+  soilType: string;
+  // Constraints
+  submergedConstraints: string;
+  environmentalConstraints: string;
+  // Maritime traffic
+  maritimeTraffic: string;
   additionalNotes: string;
 }
 
@@ -45,7 +63,19 @@ const EMPTY_WIZARD: WizardData = {
   poolType: null,
   usagePeriod: null,
   waterDepth: "",
+  waterLevelHW: "",
+  waterLevelNW: "",
+  tidalBehaviour: "",
   waveHeight: "",
+  wavePeriod: "",
+  waveDirection: "",
+  vesselTrafficWaves: "",
+  currentSpeed: "",
+  currentDirection: "",
+  soilType: "",
+  submergedConstraints: "",
+  environmentalConstraints: "",
+  maritimeTraffic: "",
   additionalNotes: "",
 };
 
@@ -108,6 +138,54 @@ function buildAnalysisPrompt(
     ? data.waveHeight.trim()
     : "Not provided: fetch from weather API and use that value.";
 
+  const siteDataLines: string[] = [
+    `- Water depth: ${depthNote}`,
+    `- Significant wave height: ${waveNote}`,
+  ];
+
+  // Water level variation
+  if (data.waterLevelHW.trim() || data.waterLevelNW.trim())
+    siteDataLines.push(
+      `- Water level variation: HW ${data.waterLevelHW.trim() || "unknown"} / NW ${data.waterLevelNW.trim() || "unknown"}`,
+    );
+  if (data.tidalBehaviour)
+    siteDataLines.push(`- Tidal / flood behaviour: ${data.tidalBehaviour}`);
+
+  // Waves
+  if (data.wavePeriod.trim())
+    siteDataLines.push(`- Wave period: ${data.wavePeriod.trim()} s`);
+  if (data.waveDirection)
+    siteDataLines.push(`- Wave direction: ${data.waveDirection}`);
+  if (data.vesselTrafficWaves)
+    siteDataLines.push(
+      `- Vessel traffic as wave source: ${data.vesselTrafficWaves}`,
+    );
+
+  // Current
+  if (data.currentSpeed.trim())
+    siteDataLines.push(`- Current speed: ${data.currentSpeed.trim()}`);
+  if (data.currentDirection)
+    siteDataLines.push(`- Current direction: ${data.currentDirection}`);
+
+  // Riverbed / soil
+  if (data.soilType)
+    siteDataLines.push(`- Riverbed / soil type: ${data.soilType}`);
+
+  // Constraints
+  if (data.submergedConstraints)
+    siteDataLines.push(`- Submerged constraints: ${data.submergedConstraints}`);
+  if (data.environmentalConstraints.trim())
+    siteDataLines.push(
+      `- Environmental / vegetation constraints: ${data.environmentalConstraints.trim()}`,
+    );
+
+  // Maritime traffic
+  if (data.maritimeTraffic)
+    siteDataLines.push(`- Maritime traffic: ${data.maritimeTraffic}`);
+
+  if (data.additionalNotes.trim())
+    siteDataLines.push(`- Additional notes: ${data.additionalNotes.trim()}`);
+
   return [
     `Please analyze this location for a Bluet floating construction project.`,
     ``,
@@ -116,11 +194,7 @@ function buildAnalysisPrompt(
     ...lines,
     ``,
     `SITE DATA PROVIDED BY CLIENT:`,
-    `- Water depth: ${depthNote}`,
-    `- Significant wave height: ${waveNote}`,
-    ...(data.additionalNotes.trim()
-      ? [`- Additional notes: ${data.additionalNotes.trim()}`]
-      : []),
+    ...siteDataLines,
     ``,
     `Fetch marine conditions for these coordinates, then produce a full PRELIMINARY SITE ASSESSMENT for Bluet's internal sales team using the standard output format.`,
   ].join("\n");
@@ -1254,81 +1328,318 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
 
           {/* STEP 3: Site data */}
           {wizardStep === "step3" && (
-            <div className="space-y-4">
-              <div className="mb-2">
+            <div className="space-y-5">
+              <div className="mb-1">
                 <h3 className="text-slate-900 dark:text-white font-medium text-sm">
                   Site information
                 </h3>
                 <p className="text-slate-500 text-xs mt-1">
-                  Provide any data you already have. Wave height and wind will
-                  be auto-fetched by the AI if left blank.
+                  All fields except water depth are optional. The AI will use
+                  API data or Finnish coastal defaults for anything left blank.
                 </p>
               </div>
 
-              {/* Water depth */}
-              <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                  Water depth at site
-                  <span className="ml-1.5 text-amber-500 dark:text-amber-400 font-normal">
-                    ⚠ Critical - min. 2.0 m required
-                  </span>
-                </label>
-                <input
-                  type="text"
-                  value={wizard.waterDepth}
-                  onChange={(e) =>
-                    setWizard((w) => ({ ...w, waterDepth: e.target.value }))
-                  }
-                  placeholder="e.g. 4.5 m  - or leave blank if unknown"
-                  className="w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 rounded-xl px-3 py-2.5 text-sm border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
-                />
-                <p className="text-slate-400 dark:text-slate-600 text-[10px] mt-1.5">
-                  Depth data cannot be auto-fetched. A client estimate or site
-                  survey value is preferred. If unknown, the AI will flag it for
-                  on-site confirmation.
-                </p>
+              {/* ── BATHYMETRY / WATER DEPTH ── */}
+              <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3.5 space-y-3">
+                <div className="text-[9px] font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-400">
+                  Bathymetry / Water Depth
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Water depth at site
+                    <span className="ml-1.5 text-amber-500 dark:text-amber-400 font-normal">
+                      ⚠ Critical - min. 2.0 m required
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    value={wizard.waterDepth}
+                    onChange={(e) =>
+                      setWizard((w) => ({ ...w, waterDepth: e.target.value }))
+                    }
+                    placeholder="e.g. 4.5 m - or leave blank if unknown"
+                    className="w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 rounded-xl px-3 py-2.5 text-sm border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                      HW (highest high water)
+                    </label>
+                    <input
+                      type="text"
+                      value={wizard.waterLevelHW}
+                      onChange={(e) =>
+                        setWizard((w) => ({ ...w, waterLevelHW: e.target.value }))
+                      }
+                      placeholder="e.g. +1.79 m"
+                      className="w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 rounded-xl px-3 py-2.5 text-sm border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                      NW (lowest water level)
+                    </label>
+                    <input
+                      type="text"
+                      value={wizard.waterLevelNW}
+                      onChange={(e) =>
+                        setWizard((w) => ({ ...w, waterLevelNW: e.target.value }))
+                      }
+                      placeholder="e.g. -1.07 m"
+                      className="w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 rounded-xl px-3 py-2.5 text-sm border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Tidal / flood behaviour
+                  </label>
+                  <select
+                    value={wizard.tidalBehaviour}
+                    onChange={(e) =>
+                      setWizard((w) => ({ ...w, tidalBehaviour: e.target.value }))
+                    }
+                    className="w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl px-3 py-2.5 text-sm border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
+                  >
+                    <option value="">Unknown / not specified</option>
+                    <option value="Stable - no significant tidal variation">Stable - no significant tidal variation</option>
+                    <option value="Moderate tidal variation (0.3-1.0 m)">Moderate tidal variation (0.3-1.0 m)</option>
+                    <option value="Large tidal variation (>1.0 m)">Large tidal variation (&gt;1.0 m)</option>
+                    <option value="Tidal reversal / bidirectional flood behaviour confirmed">Tidal reversal / bidirectional flood confirmed</option>
+                  </select>
+                </div>
               </div>
 
-              {/* Wave height */}
-              <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                  Significant wave height
-                  <span className="ml-1.5 text-slate-400 font-normal">
-                    (optional)
-                  </span>
-                </label>
-                <input
-                  type="text"
-                  value={wizard.waveHeight}
-                  onChange={(e) =>
-                    setWizard((w) => ({ ...w, waveHeight: e.target.value }))
-                  }
-                  placeholder="Leave blank  - AI fetches from weather API"
-                  className="w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 rounded-xl px-3 py-2.5 text-sm border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
-                />
-                <p className="text-slate-400 dark:text-slate-600 text-[10px] mt-1.5">
-                  Max 0.3 m without breakwater. Leave blank to use real-time
-                  weather data.
-                </p>
+              {/* ── WAVES ── */}
+              <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3.5 space-y-3">
+                <div className="text-[9px] font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-400">
+                  Waves
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Significant wave height
+                    <span className="ml-1.5 text-slate-400 font-normal">(optional - AI fetches if blank)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={wizard.waveHeight}
+                    onChange={(e) =>
+                      setWizard((w) => ({ ...w, waveHeight: e.target.value }))
+                    }
+                    placeholder="e.g. 0.2 m"
+                    className="w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 rounded-xl px-3 py-2.5 text-sm border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
+                  />
+                  <p className="text-slate-400 dark:text-slate-600 text-[10px] mt-1">
+                    Max 0.3 m without breakwater.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                      Wave period (s)
+                    </label>
+                    <input
+                      type="text"
+                      value={wizard.wavePeriod}
+                      onChange={(e) =>
+                        setWizard((w) => ({ ...w, wavePeriod: e.target.value }))
+                      }
+                      placeholder="e.g. 4 s"
+                      className="w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 rounded-xl px-3 py-2.5 text-sm border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                      Dominant wave direction
+                    </label>
+                    <select
+                      value={wizard.waveDirection}
+                      onChange={(e) =>
+                        setWizard((w) => ({ ...w, waveDirection: e.target.value }))
+                      }
+                      className="w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl px-3 py-2.5 text-sm border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
+                    >
+                      <option value="">Unknown</option>
+                      {["N","NE","E","SE","S","SW","W","NW","Multi-directional"].map(d => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Vessel traffic as wave source
+                  </label>
+                  <select
+                    value={wizard.vesselTrafficWaves}
+                    onChange={(e) =>
+                      setWizard((w) => ({ ...w, vesselTrafficWaves: e.target.value }))
+                    }
+                    className="w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl px-3 py-2.5 text-sm border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
+                  >
+                    <option value="">Unknown / not assessed</option>
+                    <option value="None - sheltered area with no meaningful vessel traffic">None - sheltered, no meaningful traffic</option>
+                    <option value="Low - occasional small vessels, negligible wave effect">Low - occasional small vessels</option>
+                    <option value="Moderate - regular vessel traffic, adds to wave loading">Moderate - regular vessel traffic</option>
+                    <option value="High - busy channel or ferry route, significant wake waves">High - busy channel / ferry route</option>
+                  </select>
+                </div>
               </div>
 
-              {/* Additional notes */}
+              {/* ── CURRENT ── */}
+              <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3.5 space-y-3">
+                <div className="text-[9px] font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-400">
+                  Current
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                      Current speed
+                    </label>
+                    <input
+                      type="text"
+                      value={wizard.currentSpeed}
+                      onChange={(e) =>
+                        setWizard((w) => ({ ...w, currentSpeed: e.target.value }))
+                      }
+                      placeholder="e.g. 0.3 m/s"
+                      className="w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 rounded-xl px-3 py-2.5 text-sm border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                      Current direction
+                    </label>
+                    <select
+                      value={wizard.currentDirection}
+                      onChange={(e) =>
+                        setWizard((w) => ({ ...w, currentDirection: e.target.value }))
+                      }
+                      className="w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl px-3 py-2.5 text-sm border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
+                    >
+                      <option value="">Unknown</option>
+                      {["N","NE","E","SE","S","SW","W","NW","Bidirectional / tidal reversal"].map(d => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── RIVERBED / SOIL ── */}
+              <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3.5 space-y-3">
+                <div className="text-[9px] font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-400">
+                  Riverbed / Soil Conditions
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Soil / seabed type
+                  </label>
+                  <select
+                    value={wizard.soilType}
+                    onChange={(e) =>
+                      setWizard((w) => ({ ...w, soilType: e.target.value }))
+                    }
+                    className="w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl px-3 py-2.5 text-sm border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
+                  >
+                    <option value="">Unknown</option>
+                    <option value="Rock / hard substrate">Rock / hard substrate</option>
+                    <option value="Glacial till (hard, typical Finnish coast)">Glacial till (hard, typical Finnish coast)</option>
+                    <option value="Sand (firm, good anchoring)">Sand (firm, good anchoring)</option>
+                    <option value="Gravel / coarse material">Gravel / coarse material</option>
+                    <option value="Clay (soft, moderate anchoring)">Clay (soft, moderate anchoring)</option>
+                    <option value="Silt / soft mud (challenging anchoring)">Silt / soft mud (challenging anchoring)</option>
+                    <option value="Mixed / variable across site">Mixed / variable across site</option>
+                    <option value="Contaminated - status known, restrictions apply">Contaminated - restrictions apply</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* ── CONSTRAINTS ── */}
+              <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3.5 space-y-3">
+                <div className="text-[9px] font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-400">
+                  Submerged &amp; Environmental Constraints
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Submerged constraints (cables, pipes, obstructions)
+                  </label>
+                  <select
+                    value={wizard.submergedConstraints}
+                    onChange={(e) =>
+                      setWizard((w) => ({ ...w, submergedConstraints: e.target.value }))
+                    }
+                    className="w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl px-3 py-2.5 text-sm border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
+                  >
+                    <option value="">Unknown - survey required</option>
+                    <option value="None known - area checked, clear">None known - area checked, clear</option>
+                    <option value="Minor constraints present - locations mapped">Minor constraints - locations mapped</option>
+                    <option value="Significant constraints (cables / pipes) - anchoring zones restricted">Significant constraints - anchoring restricted</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Vegetation / environmental constraints
+                    <span className="ml-1.5 text-slate-400 font-normal">(optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={wizard.environmentalConstraints}
+                    onChange={(e) =>
+                      setWizard((w) => ({ ...w, environmentalConstraints: e.target.value }))
+                    }
+                    placeholder="e.g. protected seagrass, Natura 2000 area, bird nesting zone..."
+                    className="w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 rounded-xl px-3 py-2.5 text-sm border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* ── MARITIME TRAFFIC ── */}
+              <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3.5 space-y-3">
+                <div className="text-[9px] font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-400">
+                  Maritime Traffic
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Vessel traffic level at site
+                  </label>
+                  <select
+                    value={wizard.maritimeTraffic}
+                    onChange={(e) =>
+                      setWizard((w) => ({ ...w, maritimeTraffic: e.target.value }))
+                    }
+                    className="w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl px-3 py-2.5 text-sm border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
+                  >
+                    <option value="">Unknown</option>
+                    <option value="None - closed or private water body">None - closed or private water body</option>
+                    <option value="Low - occasional leisure craft only">Low - occasional leisure craft only</option>
+                    <option value="Moderate - regular recreational and commercial traffic">Moderate - recreational and commercial</option>
+                    <option value="High - active shipping lane or busy port approach">High - shipping lane / port approach</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* ── ADDITIONAL NOTES ── */}
               <div>
                 <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                   Additional notes from client
-                  <span className="ml-1.5 text-slate-400 font-normal">
-                    (optional)
-                  </span>
+                  <span className="ml-1.5 text-slate-400 font-normal">(optional)</span>
                 </label>
                 <textarea
                   value={wizard.additionalNotes}
                   onChange={(e) =>
-                    setWizard((w) => ({
-                      ...w,
-                      additionalNotes: e.target.value,
-                    }))
+                    setWizard((w) => ({ ...w, additionalNotes: e.target.value }))
                   }
-                  placeholder="e.g. protected bay, icy winters, rocky seabed, client already has a building permit..."
+                  placeholder="e.g. protected bay, icy winters, client already has a building permit..."
                   rows={3}
                   className="w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 rounded-xl px-3 py-2.5 text-sm border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-blue-500 transition-colors resize-none"
                 />
