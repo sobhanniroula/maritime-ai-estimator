@@ -52,10 +52,12 @@ const EMPTY_WIZARD: WizardData = {
 interface ChatHistoryEntry {
   id: string;
   title: string;
+  detail?: string;
   lat: number;
   lng: number;
   projectType: string;
   timestamp: number;
+  suitability?: "SUITABLE" | "CONDITIONAL" | "UNSUITABLE";
 }
 
 function buildAnalysisPrompt(
@@ -235,7 +237,7 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, isLoading]);
 
   useEffect(() => {
     try {
@@ -244,6 +246,35 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
     } catch {}
   }, []);
 
+  // Back-fill suitability on the most recent history entry once the assessment completes
+  useEffect(() => {
+    if (isLoading) return;
+    const assessMsg = messages.find(
+      (m, idx) =>
+        m.role === "assistant" &&
+        m.content.trim() &&
+        (proposalSentAt === null || idx < proposalSentAt),
+    );
+    if (!assessMsg || !isAssessmentContent(assessMsg.content)) return;
+    const parsed = parseAssessment(assessMsg.content);
+    const suitability = parsed.suitabilityStatus;
+    if (!suitability) return;
+    setChatHistory((prev) => {
+      if (!prev.length || prev[0].suitability === suitability) return prev;
+      const updated = [
+        { ...prev[0], suitability },
+        ...prev.slice(1),
+      ];
+      try {
+        localStorage.setItem(
+          "maritime-ai-chat-history",
+          JSON.stringify(updated),
+        );
+      } catch {}
+      return updated;
+    });
+  }, [messages, isLoading, proposalSentAt]);
+
   function handleNewChat() {
     setWizardStep("idle");
     setWizard(EMPTY_WIZARD);
@@ -251,6 +282,19 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
     setFirstMessageId(null);
     setProposalSentAt(null);
     setSidebarView("chat");
+  }
+
+  function handleDeleteHistory(id: string) {
+    setChatHistory((prev) => {
+      const updated = prev.filter((e) => e.id !== id);
+      try {
+        localStorage.setItem(
+          "maritime-ai-chat-history",
+          JSON.stringify(updated),
+        );
+      } catch {}
+      return updated;
+    });
   }
 
   async function handleCopyProposal() {
@@ -297,9 +341,20 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
     const typeLabel = wizard.projectType
       ? (typeLabels[wizard.projectType] ?? "Analysis")
       : "Analysis";
+    const poolDetailLabels: Record<string, string> = {
+      natural: "Natural water pool (Grated / Bottomless)",
+      heated: "Heated pool (Barge / Hybrid / Multiuse)",
+      both: "Heated + natural water pool",
+    };
+    const detail =
+      wizard.projectType === "pool"
+        ? (poolDetailLabels[wizard.poolType ?? ""] ?? undefined)
+        : wizard.intendedUse ?? undefined;
+
     const entry: ChatHistoryEntry = {
       id: Date.now().toString(),
       title: `${typeLabel} - ${selectedLocation.lat.toFixed(3)}N, ${selectedLocation.lng.toFixed(3)}E`,
+      detail,
       lat: selectedLocation.lat,
       lng: selectedLocation.lng,
       projectType: wizard.projectType ?? "",
@@ -690,21 +745,67 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
                   key={entry.id}
                   className="bg-slate-800/60 border border-slate-700 rounded-xl p-3"
                 >
-                  <div className="text-slate-200 text-xs font-medium leading-snug mb-1.5">
-                    {entry.title}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 mb-1.5">
+                      <div className="text-slate-200 text-xs font-medium leading-snug">
+                        {entry.title}
+                      </div>
+                      {entry.detail && (
+                        <div className="text-slate-400 text-[10px] mt-0.5 leading-snug">
+                          {entry.detail}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => handleDeleteHistory(entry.id)}
+                      title="Delete"
+                      className="text-slate-500 hover:text-red-400 transition-colors shrink-0 mt-0.5"
+                    >
+                      <svg
+                        className="w-3.5 h-3.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={1.75}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"
+                        />
+                      </svg>
+                    </button>
                   </div>
                   <div className="flex items-center gap-2 text-[10px] text-slate-500">
                     <span>
-                      {new Date(entry.timestamp).toLocaleDateString("en-FI", {
+                      {new Date(entry.timestamp).toLocaleString("en-FI", {
                         day: "2-digit",
                         month: "short",
                         year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
                       })}
                     </span>
                     <span className="text-slate-700">·</span>
                     <span>
                       {entry.lat.toFixed(3)}N, {entry.lng.toFixed(3)}E
                     </span>
+                    {entry.suitability && (
+                      <>
+                        <span className="text-slate-700">·</span>
+                        <span
+                          className={`font-semibold ${
+                            entry.suitability === "SUITABLE"
+                              ? "text-emerald-400"
+                              : entry.suitability === "CONDITIONAL"
+                                ? "text-amber-400"
+                                : "text-red-400"
+                          }`}
+                        >
+                          {entry.suitability}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
               ))}
@@ -1276,7 +1377,7 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
               if (message.role !== "user" && message.role !== "assistant")
                 return null;
               const isUser = message.role === "user";
-              const isFirstMessage = message.id === firstMessageId;
+              const isFirstMessage = isUser && msgIdx === 0;
               const isProposalPrompt =
                 isUser && proposalSentAt !== null && msgIdx === proposalSentAt;
               // Hide the currently streaming assistant message - skeleton shows instead
