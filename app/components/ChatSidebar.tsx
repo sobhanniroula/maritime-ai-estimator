@@ -12,7 +12,13 @@ interface ChatSidebarProps {
   selectedLocation: SelectedLocation | null;
 }
 
-type WizardStep = "idle" | "confirming" | "step1" | "step2" | "step3" | "chatting";
+type WizardStep =
+  | "idle"
+  | "confirming"
+  | "step1"
+  | "step2"
+  | "step3"
+  | "chatting";
 type ProjectType = "infrastructure" | "pool" | "event" | "residential";
 type PoolType = "natural" | "heated" | "both";
 type SizeCategory = "small" | "medium" | "large";
@@ -40,11 +46,16 @@ const EMPTY_WIZARD: WizardData = {
   additionalNotes: "",
 };
 
-function buildAnalysisPrompt(location: SelectedLocation, data: WizardData): string {
+function buildAnalysisPrompt(
+  location: SelectedLocation,
+  data: WizardData,
+): string {
   const projectLabels: Record<ProjectType, string> = {
-    infrastructure: "Floating infrastructure / foundation (sauna, terrace, restaurant, café, commercial space)",
+    infrastructure:
+      "Floating infrastructure / foundation (sauna, terrace, restaurant, café, commercial space)",
     pool: "Floating pool solution",
-    event: "Floating event platform (concerts, sports, exhibitions, temporary use)",
+    event:
+      "Floating event platform (concerts, sports, exhibitions, temporary use)",
     residential: "Floating residential housing (apartments, private homes)",
   };
 
@@ -62,12 +73,18 @@ function buildAnalysisPrompt(location: SelectedLocation, data: WizardData): stri
 
   const lines: string[] = [];
 
-  lines.push(`PROJECT TYPE: ${data.projectType ? projectLabels[data.projectType] : "Not specified"}`);
+  lines.push(
+    `PROJECT TYPE: ${data.projectType ? projectLabels[data.projectType] : "Not specified"}`,
+  );
 
   if (data.intendedUse) lines.push(`INTENDED USE: ${data.intendedUse}`);
   if (data.poolType) lines.push(`POOL TYPE: ${poolLabels[data.poolType]}`);
-  if (data.sizeCategory) lines.push(`APPROXIMATE SIZE: ${sizeLabels[data.sizeCategory]}`);
-  if (data.usagePeriod) lines.push(`OPERATION PERIOD: ${data.usagePeriod === "year-round" ? "Year-round" : "Seasonal / temporary"}`);
+  if (data.sizeCategory)
+    lines.push(`APPROXIMATE SIZE: ${sizeLabels[data.sizeCategory]}`);
+  if (data.usagePeriod)
+    lines.push(
+      `OPERATION PERIOD: ${data.usagePeriod === "year-round" ? "Year-round" : "Seasonal / temporary"}`,
+    );
 
   const depthNote = data.waterDepth.trim()
     ? data.waterDepth.trim()
@@ -87,14 +104,21 @@ function buildAnalysisPrompt(location: SelectedLocation, data: WizardData): stri
     `SITE DATA PROVIDED BY CLIENT:`,
     `- Water depth: ${depthNote}`,
     `- Significant wave height: ${waveNote}`,
-    ...(data.additionalNotes.trim() ? [`- Additional notes: ${data.additionalNotes.trim()}`] : []),
+    ...(data.additionalNotes.trim()
+      ? [`- Additional notes: ${data.additionalNotes.trim()}`]
+      : []),
     ``,
     `Fetch marine conditions for these coordinates, then produce a full PRELIMINARY SITE ASSESSMENT for Bluet's internal sales team using the standard output format.`,
   ].join("\n");
 }
 
 function WizardProgress({ step }: { step: WizardStep }) {
-  const stepMap: Partial<Record<WizardStep, number>> = { confirming: 0, step1: 1, step2: 2, step3: 3 };
+  const stepMap: Partial<Record<WizardStep, number>> = {
+    confirming: 0,
+    step1: 1,
+    step2: 2,
+    step3: 3,
+  };
   const stepNumber = stepMap[step] ?? null;
   if (stepNumber === null) return null;
   return (
@@ -106,17 +130,27 @@ function WizardProgress({ step }: { step: WizardStep }) {
         { n: 3, label: "Site data" },
       ].map(({ n, label }, i, arr) => (
         <div key={n} className="flex items-center gap-1.5">
-          <div className={`flex items-center gap-1 ${stepNumber === n ? "text-white" : stepNumber > n ? "text-emerald-400" : "text-slate-600"}`}>
-            <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border ${
-              stepNumber > n ? "bg-emerald-500 border-emerald-500 text-white" :
-              stepNumber === n ? "bg-blue-600 border-blue-600 text-white" :
-              "border-slate-700 text-slate-600"
-            }`}>
+          <div
+            className={`flex items-center gap-1 ${stepNumber === n ? "text-white" : stepNumber > n ? "text-emerald-400" : "text-slate-600"}`}
+          >
+            <div
+              className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border ${
+                stepNumber > n
+                  ? "bg-emerald-500 border-emerald-500 text-white"
+                  : stepNumber === n
+                    ? "bg-blue-600 border-blue-600 text-white"
+                    : "border-slate-700 text-slate-600"
+              }`}
+            >
               {stepNumber > n ? "✓" : n + 1}
             </div>
             <span className="text-[10px]">{label}</span>
           </div>
-          {i < arr.length - 1 && <div className={`w-4 h-px ${stepNumber > n ? "bg-emerald-600" : "bg-slate-700"}`} />}
+          {i < arr.length - 1 && (
+            <div
+              className={`w-4 h-px ${stepNumber > n ? "bg-emerald-600" : "bg-slate-700"}`}
+            />
+          )}
         </div>
       ))}
     </div>
@@ -128,9 +162,17 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
   const [wizardStep, setWizardStep] = useState<WizardStep>("idle");
   const [wizard, setWizard] = useState<WizardData>(EMPTY_WIZARD);
   const [firstMessageId, setFirstMessageId] = useState<string | null>(null);
+  const [isPdfGenerating, setIsPdfGenerating] = useState(false);
 
-  const { messages, input, handleInputChange, handleSubmit, append, isLoading, setMessages } =
-    useChat({ api: "/api/chat" });
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    append,
+    isLoading,
+    setMessages,
+  } = useChat({ api: "/api/chat" });
 
   // Reset wizard whenever the user picks a new map location
   useEffect(() => {
@@ -149,7 +191,11 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
   function handleProjectType(type: ProjectType) {
     if (type === "residential") {
       // Residential has no meaningful step 2 — jump straight to site data
-      setWizard({ ...EMPTY_WIZARD, projectType: type, intendedUse: "Residential apartments or private home" });
+      setWizard({
+        ...EMPTY_WIZARD,
+        projectType: type,
+        intendedUse: "Residential apartments or private home",
+      });
       setWizardStep("step3");
     } else {
       setWizard({ ...EMPTY_WIZARD, projectType: type });
@@ -172,8 +218,99 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
     append({
       role: "user",
       content:
-        "Using the site assessment above, generate a CLIENT-FACING Preliminary Project Proposal — a document Bluet would send to the client contact, NOT an internal tool output. Use professional, positive language. Structure:\n\n1. EXECUTIVE SUMMARY (2–3 sentences: what we propose and why this site works)\n2. PROPOSED SOLUTION (product names, key benefits in client-friendly terms — no internal notes or threshold jargon)\n3. INDICATIVE INVESTMENT (product fee starting from + variable fees range; present it as an investment, not a cost breakdown)\n4. PROJECT TIMELINE (5-stage: Concept Design → Permit Applications → Manufacturing → Delivery & Installation → Handover; give typical durations)\n5. PERMIT REQUIREMENTS (simplified 2–3 sentences for a non-technical client — no ELY/AVI acronyms unexplained)\n6. NEXT STEPS (3 concrete actions the client and Bluet take together)\n\nClose with a single call-to-action sentence. Keep to ~250 words total. Do NOT repeat the internal assessment format.",
+        "Using the site assessment above, generate a CLIENT-FACING Preliminary Project Proposal — a document Maritime AI Estimator would send to the client contact, NOT an internal tool output. Use professional, positive language. Structure:\n\n1. EXECUTIVE SUMMARY (2–3 sentences: what we propose and why this site works)\n2. PROPOSED SOLUTION (product names, key benefits in client-friendly terms — no internal notes or threshold jargon)\n3. INDICATIVE INVESTMENT (product fee starting from + variable fees range; present it as an investment, not a cost breakdown)\n4. PROJECT TIMELINE (5-stage: Concept Design → Permit Applications → Manufacturing → Delivery & Installation → Handover; give typical durations)\n5. PERMIT REQUIREMENTS (simplified 2–3 sentences for a non-technical client — no ELY/AVI acronyms unexplained)\n6. NEXT STEPS (3 concrete actions the client and Maritime AI Estimator take together)\n\nClose with a single call-to-action sentence. Keep to ~250 words total. Do NOT repeat the internal assessment format.",
     });
+  }
+
+  async function handleDownloadSummary() {
+    setIsPdfGenerating(true);
+    try {
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF({ unit: "mm", format: "a4" });
+
+      const pageW = doc.internal.pageSize.getWidth();
+      const margin = 18;
+      const contentW = pageW - margin * 2;
+
+      // Header
+      doc.setFontSize(15);
+      doc.setFont("helvetica", "bold");
+      doc.text("MARITIME AI ESTIMATOR", margin, 21);
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text("Preliminary Site Assessment", margin, 28);
+
+      const metaParts: string[] = [];
+      if (selectedLocation)
+        metaParts.push(
+          `${selectedLocation.lat.toFixed(4)}°N, ${selectedLocation.lng.toFixed(4)}°E`,
+        );
+      metaParts.push(new Date().toLocaleDateString("en-FI"));
+      doc.text(metaParts.join("   ·   "), margin, 35);
+
+      if (analysisLabel) {
+        doc.text(`Project type: ${analysisLabel}`, margin, 41);
+      }
+
+      doc.setDrawColor(80, 80, 80);
+      doc.line(margin, 45, pageW - margin, 45);
+
+      let y = 53;
+
+      const aiMessages = messages.filter(
+        (m) => m.role === "assistant" && m.content.trim(),
+      );
+
+      aiMessages.forEach((msg, idx) => {
+        if (idx > 0) {
+          y += 5;
+          doc.setDrawColor(180, 180, 180);
+          doc.line(margin, y, pageW - margin, y);
+          y += 7;
+        }
+
+        doc.setFontSize(8);
+        doc.setFont("courier", "normal");
+
+        const lines = doc.splitTextToSize(msg.content, contentW);
+        (lines as string[]).forEach((line) => {
+          if (y > 278) {
+            doc.addPage();
+            y = 20;
+          }
+          doc.text(line, margin, y);
+          y += 4.5;
+        });
+      });
+
+      // Footer on every page
+      const totalPages = doc.getNumberOfPages();
+      for (let p = 1; p <= totalPages; p++) {
+        doc.setPage(p);
+        doc.setFontSize(7);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(140);
+        doc.text(
+          "Maritime AI Estimator  ·  For internal sales use only  ·  Indicative — not a binding offer",
+          margin,
+          291,
+        );
+        doc.text(`${p} / ${totalPages}`, pageW - margin, 291, {
+          align: "right",
+        });
+        doc.setTextColor(0);
+      }
+
+      const slug = selectedLocation
+        ? `${selectedLocation.lat.toFixed(2)}N-${selectedLocation.lng.toFixed(2)}E`
+        : "site";
+      doc.save(
+        `maritime-ai-estimator-assessment-${slug}-${new Date().toISOString().slice(0, 10)}.pdf`,
+      );
+    } finally {
+      setIsPdfGenerating(false);
+    }
   }
 
   const hasAiResponse = messages.some((m) => m.role === "assistant");
@@ -194,15 +331,20 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
       <div className="px-5 py-4 border-b border-slate-800 bg-slate-900 shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <h2 className="text-white font-semibold text-sm">AI Marine Consultant</h2>
+          <h2 className="text-white font-semibold text-sm">
+            AI Marine Consultant
+          </h2>
         </div>
         <p className="text-slate-500 text-xs mt-1">
-          {wizardStep === "idle" && "Click the map to analyze a coastal location"}
-          {wizardStep === "confirming" && "Confirm the selected location to continue"}
+          {wizardStep === "idle" &&
+            "Click the map to analyze a coastal location"}
+          {wizardStep === "confirming" &&
+            "Confirm the selected location to continue"}
           {wizardStep === "step1" && "Step 1 of 3 — Select project type"}
           {wizardStep === "step2" && "Step 2 of 3 — Project details"}
           {wizardStep === "step3" && "Step 3 of 3 — Site information"}
-          {wizardStep === "chatting" && "Internal pre-sales assessment — Bluet sales team"}
+          {wizardStep === "chatting" &&
+            "Internal pre-sales assessment — Bluet sales team"}
         </p>
       </div>
 
@@ -214,14 +356,17 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
       {/* ── WIZARD PANELS ─────────────────────────────────────── */}
       {wizardStep !== "chatting" && (
         <div className="flex-1 overflow-y-auto px-4 py-5">
-
           {/* IDLE */}
           {wizardStep === "idle" && (
             <div className="flex flex-col items-center justify-center h-full text-center px-4">
               <div className="text-4xl mb-3">🌊</div>
-              <h3 className="text-slate-300 font-medium text-sm mb-2">Select a coastal location</h3>
+              <h3 className="text-slate-300 font-medium text-sm mb-2">
+                Select a coastal location
+              </h3>
               <p className="text-slate-600 text-xs leading-relaxed">
-                Click anywhere on the map to begin a site assessment. The AI will analyze wave conditions, wind, ice risk, and recommend the right Bluet solution.
+                Click anywhere on the map to begin a site assessment. The AI
+                will analyze wave conditions, wind, ice risk, and recommend the
+                right Bluet solution.
               </p>
             </div>
           )}
@@ -230,7 +375,9 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
           {wizardStep === "confirming" && selectedLocation && (
             <div className="space-y-4">
               <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4">
-                <div className="text-slate-400 text-[10px] uppercase tracking-widest mb-2">Location selected</div>
+                <div className="text-slate-400 text-[10px] uppercase tracking-widest mb-2">
+                  Location selected
+                </div>
                 <div className="text-white font-mono text-base font-semibold">
                   {selectedLocation.lat.toFixed(4)}°N
                 </div>
@@ -243,8 +390,14 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
               </div>
 
               <div className="bg-slate-800/30 rounded-xl p-3 text-xs text-slate-400 leading-relaxed">
-                <p>Marine conditions (wave height, wind speed, ice risk) will be automatically fetched by the AI for this location.</p>
-                <p className="mt-1.5">You&apos;ll be asked a few short questions about the project type and any site data you already have.</p>
+                <p>
+                  Marine conditions (wave height, wind speed, ice risk) will be
+                  automatically fetched by the AI for this location.
+                </p>
+                <p className="mt-1.5">
+                  You&apos;ll be asked a few short questions about the project
+                  type and any site data you already have.
+                </p>
               </div>
 
               <button
@@ -260,16 +413,40 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
           {wizardStep === "step1" && (
             <div className="space-y-3">
               <div className="mb-4">
-                <h3 className="text-white font-medium text-sm">What type of solution does the client need?</h3>
-                <p className="text-slate-500 text-xs mt-1">Select the primary project category</p>
+                <h3 className="text-white font-medium text-sm">
+                  What type of solution does the client need?
+                </h3>
+                <p className="text-slate-500 text-xs mt-1">
+                  Select the primary project category
+                </p>
               </div>
 
               {(
                 [
-                  { type: "infrastructure" as ProjectType, icon: "🏗️", label: "Floating Infrastructure", desc: "Sauna, terrace, restaurant, café, commercial space" },
-                  { type: "pool" as ProjectType, icon: "🏊", label: "Floating Pool", desc: "Natural water, heated or hybrid pool" },
-                  { type: "event" as ProjectType, icon: "🎪", label: "Event Platform", desc: "Concerts, sports, exhibitions, temporary use" },
-                  { type: "residential" as ProjectType, icon: "🏠", label: "Residential Housing", desc: "Floating apartments or private homes" },
+                  {
+                    type: "infrastructure" as ProjectType,
+                    icon: "🏗️",
+                    label: "Floating Infrastructure",
+                    desc: "Sauna, terrace, restaurant, café, commercial space",
+                  },
+                  {
+                    type: "pool" as ProjectType,
+                    icon: "🏊",
+                    label: "Floating Pool",
+                    desc: "Natural water, heated or hybrid pool",
+                  },
+                  {
+                    type: "event" as ProjectType,
+                    icon: "🎪",
+                    label: "Event Platform",
+                    desc: "Concerts, sports, exhibitions, temporary use",
+                  },
+                  {
+                    type: "residential" as ProjectType,
+                    icon: "🏠",
+                    label: "Residential Housing",
+                    desc: "Floating apartments or private homes",
+                  },
                 ] as const
               ).map(({ type, icon, label, desc }) => (
                 <button
@@ -280,10 +457,16 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
                   <div className="flex items-start gap-3">
                     <span className="text-2xl leading-none mt-0.5">{icon}</span>
                     <div>
-                      <div className="text-white text-sm font-medium group-hover:text-blue-300 transition-colors">{label}</div>
-                      <div className="text-slate-500 text-xs mt-0.5">{desc}</div>
+                      <div className="text-white text-sm font-medium group-hover:text-blue-300 transition-colors">
+                        {label}
+                      </div>
+                      <div className="text-slate-500 text-xs mt-0.5">
+                        {desc}
+                      </div>
                     </div>
-                    <div className="ml-auto text-slate-600 group-hover:text-blue-400 transition-colors text-lg">›</div>
+                    <div className="ml-auto text-slate-600 group-hover:text-blue-400 transition-colors text-lg">
+                      ›
+                    </div>
                   </div>
                 </button>
               ))}
@@ -304,20 +487,44 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
               {wizard.projectType === "infrastructure" && (
                 <>
                   <div>
-                    <h3 className="text-white font-medium text-sm mb-1">What will be built on the water?</h3>
-                    <p className="text-slate-500 text-xs mb-3">Select the primary intended use</p>
+                    <h3 className="text-white font-medium text-sm mb-1">
+                      What will be built on the water?
+                    </h3>
+                    <p className="text-slate-500 text-xs mb-3">
+                      Select the primary intended use
+                    </p>
                     <div className="grid grid-cols-2 gap-2">
                       {[
-                        { value: "Sauna or leisure terrace", label: "🧖 Sauna / Terrace" },
-                        { value: "Restaurant or café", label: "🍽️ Restaurant / Café" },
-                        { value: "Hotel or spa accommodation", label: "🏨 Hotel / Spa" },
-                        { value: "Office or commercial space", label: "💼 Office / Commercial" },
-                        { value: "Marina or dock facility", label: "⚓ Marina / Dock" },
-                        { value: "Mixed use or other", label: "🔀 Mixed / Other" },
+                        {
+                          value: "Sauna or leisure terrace",
+                          label: "🧖 Sauna / Terrace",
+                        },
+                        {
+                          value: "Restaurant or café",
+                          label: "🍽️ Restaurant / Café",
+                        },
+                        {
+                          value: "Hotel or spa accommodation",
+                          label: "🏨 Hotel / Spa",
+                        },
+                        {
+                          value: "Office or commercial space",
+                          label: "💼 Office / Commercial",
+                        },
+                        {
+                          value: "Marina or dock facility",
+                          label: "⚓ Marina / Dock",
+                        },
+                        {
+                          value: "Mixed use or other",
+                          label: "🔀 Mixed / Other",
+                        },
                       ].map(({ value, label }) => (
                         <button
                           key={value}
-                          onClick={() => setWizard((w) => ({ ...w, intendedUse: value }))}
+                          onClick={() =>
+                            setWizard((w) => ({ ...w, intendedUse: value }))
+                          }
                           className={`rounded-xl px-3 py-2.5 text-xs text-left transition-all border ${
                             wizard.intendedUse === value
                               ? "bg-blue-600 border-blue-500 text-white"
@@ -331,18 +538,34 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
                   </div>
 
                   <div>
-                    <p className="text-slate-400 text-xs mb-2">Approximate project size</p>
+                    <p className="text-slate-400 text-xs mb-2">
+                      Approximate project size
+                    </p>
                     <div className="flex gap-2">
                       {(
                         [
-                          { value: "small" as SizeCategory, label: "Small", sub: "< 200 m²" },
-                          { value: "medium" as SizeCategory, label: "Medium", sub: "200–500 m²" },
-                          { value: "large" as SizeCategory, label: "Large", sub: "> 500 m²" },
+                          {
+                            value: "small" as SizeCategory,
+                            label: "Small",
+                            sub: "< 200 m²",
+                          },
+                          {
+                            value: "medium" as SizeCategory,
+                            label: "Medium",
+                            sub: "200–500 m²",
+                          },
+                          {
+                            value: "large" as SizeCategory,
+                            label: "Large",
+                            sub: "> 500 m²",
+                          },
                         ] as const
                       ).map(({ value, label, sub }) => (
                         <button
                           key={value}
-                          onClick={() => setWizard((w) => ({ ...w, sizeCategory: value }))}
+                          onClick={() =>
+                            setWizard((w) => ({ ...w, sizeCategory: value }))
+                          }
                           className={`flex-1 rounded-xl px-2 py-2.5 text-center transition-all border ${
                             wizard.sizeCategory === value
                               ? "bg-blue-600 border-blue-500 text-white"
@@ -350,7 +573,9 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
                           }`}
                         >
                           <div className="text-xs font-medium">{label}</div>
-                          <div className="text-[10px] mt-0.5 opacity-70">{sub}</div>
+                          <div className="text-[10px] mt-0.5 opacity-70">
+                            {sub}
+                          </div>
                         </button>
                       ))}
                     </div>
@@ -362,19 +587,40 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
               {wizard.projectType === "pool" && (
                 <>
                   <div>
-                    <h3 className="text-white font-medium text-sm mb-1">What type of pool?</h3>
-                    <p className="text-slate-500 text-xs mb-3">This determines the minimum site depth required</p>
+                    <h3 className="text-white font-medium text-sm mb-1">
+                      What type of pool?
+                    </h3>
+                    <p className="text-slate-500 text-xs mb-3">
+                      This determines the minimum site depth required
+                    </p>
                     <div className="space-y-2">
                       {(
                         [
-                          { value: "natural" as PoolType, icon: "🌊", label: "Natural water pool", desc: "Uses surrounding water — Grated or Bottomless. Site depth min. 2–3 m." },
-                          { value: "heated" as PoolType, icon: "🌡️", label: "Heated pool", desc: "Filtered + temperature-controlled — Barge, Hybrid or Multiuse. Site depth from 1.5 m." },
-                          { value: "both" as PoolType, icon: "♾️", label: "Both", desc: "Combined facility with heated and natural water pools." },
+                          {
+                            value: "natural" as PoolType,
+                            icon: "🌊",
+                            label: "Natural water pool",
+                            desc: "Uses surrounding water — Grated or Bottomless. Site depth min. 2–3 m.",
+                          },
+                          {
+                            value: "heated" as PoolType,
+                            icon: "🌡️",
+                            label: "Heated pool",
+                            desc: "Filtered + temperature-controlled — Barge, Hybrid or Multiuse. Site depth from 1.5 m.",
+                          },
+                          {
+                            value: "both" as PoolType,
+                            icon: "♾️",
+                            label: "Both",
+                            desc: "Combined facility with heated and natural water pools.",
+                          },
                         ] as const
                       ).map(({ value, icon, label, desc }) => (
                         <button
                           key={value}
-                          onClick={() => setWizard((w) => ({ ...w, poolType: value }))}
+                          onClick={() =>
+                            setWizard((w) => ({ ...w, poolType: value }))
+                          }
                           className={`w-full rounded-xl px-4 py-3 text-left transition-all border ${
                             wizard.poolType === value
                               ? "bg-blue-600 border-blue-500 text-white"
@@ -382,10 +628,16 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
                           }`}
                         >
                           <div className="flex items-start gap-2">
-                            <span className="text-lg leading-none mt-0.5">{icon}</span>
+                            <span className="text-lg leading-none mt-0.5">
+                              {icon}
+                            </span>
                             <div>
                               <div className="text-sm font-medium">{label}</div>
-                              <div className={`text-xs mt-0.5 ${wizard.poolType === value ? "text-blue-200" : "text-slate-500"}`}>{desc}</div>
+                              <div
+                                className={`text-xs mt-0.5 ${wizard.poolType === value ? "text-blue-200" : "text-slate-500"}`}
+                              >
+                                {desc}
+                              </div>
                             </div>
                           </div>
                         </button>
@@ -394,17 +646,27 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
                   </div>
 
                   <div>
-                    <p className="text-slate-400 text-xs mb-2">Operation period</p>
+                    <p className="text-slate-400 text-xs mb-2">
+                      Operation period
+                    </p>
                     <div className="flex gap-2">
                       {(
                         [
-                          { value: "year-round" as UsagePeriod, label: "☀️❄️ Year-round" },
-                          { value: "seasonal" as UsagePeriod, label: "☀️ Summer seasonal" },
+                          {
+                            value: "year-round" as UsagePeriod,
+                            label: "☀️❄️ Year-round",
+                          },
+                          {
+                            value: "seasonal" as UsagePeriod,
+                            label: "☀️ Summer seasonal",
+                          },
                         ] as const
                       ).map(({ value, label }) => (
                         <button
                           key={value}
-                          onClick={() => setWizard((w) => ({ ...w, usagePeriod: value }))}
+                          onClick={() =>
+                            setWizard((w) => ({ ...w, usagePeriod: value }))
+                          }
                           className={`flex-1 rounded-xl px-3 py-2.5 text-xs text-center transition-all border ${
                             wizard.usagePeriod === value
                               ? "bg-blue-600 border-blue-500 text-white"
@@ -423,18 +685,37 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
               {wizard.projectType === "event" && (
                 <>
                   <div>
-                    <h3 className="text-white font-medium text-sm mb-1">What type of event?</h3>
-                    <p className="text-slate-500 text-xs mb-3">Multiuse Platform suits all event types — site depth 1–10 m</p>
+                    <h3 className="text-white font-medium text-sm mb-1">
+                      What type of event?
+                    </h3>
+                    <p className="text-slate-500 text-xs mb-3">
+                      Multiuse Platform suits all event types — site depth 1–10
+                      m
+                    </p>
                     <div className="grid grid-cols-2 gap-2">
                       {[
-                        { value: "Concert or performing arts stage", label: "🎵 Concert / Stage" },
-                        { value: "Sports field (padel, football, etc.)", label: "⚽ Sports Field" },
-                        { value: "Market, exhibition or pop-up", label: "🎪 Market / Exhibition" },
-                        { value: "Temporary dock or working platform", label: "⚓ Dock / Platform" },
+                        {
+                          value: "Concert or performing arts stage",
+                          label: "🎵 Concert / Stage",
+                        },
+                        {
+                          value: "Sports field (padel, football, etc.)",
+                          label: "⚽ Sports Field",
+                        },
+                        {
+                          value: "Market, exhibition or pop-up",
+                          label: "🎪 Market / Exhibition",
+                        },
+                        {
+                          value: "Temporary dock or working platform",
+                          label: "⚓ Dock / Platform",
+                        },
                       ].map(({ value, label }) => (
                         <button
                           key={value}
-                          onClick={() => setWizard((w) => ({ ...w, intendedUse: value }))}
+                          onClick={() =>
+                            setWizard((w) => ({ ...w, intendedUse: value }))
+                          }
                           className={`rounded-xl px-3 py-2.5 text-xs text-left transition-all border ${
                             wizard.intendedUse === value
                               ? "bg-blue-600 border-blue-500 text-white"
@@ -448,17 +729,27 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
                   </div>
 
                   <div>
-                    <p className="text-slate-400 text-xs mb-2">How long is the platform needed?</p>
+                    <p className="text-slate-400 text-xs mb-2">
+                      How long is the platform needed?
+                    </p>
                     <div className="flex gap-2">
                       {(
                         [
-                          { value: "seasonal" as UsagePeriod, label: "📅 Temporary / one-off" },
-                          { value: "year-round" as UsagePeriod, label: "🔁 Permanent / recurring" },
+                          {
+                            value: "seasonal" as UsagePeriod,
+                            label: "📅 Temporary / one-off",
+                          },
+                          {
+                            value: "year-round" as UsagePeriod,
+                            label: "🔁 Permanent / recurring",
+                          },
                         ] as const
                       ).map(({ value, label }) => (
                         <button
                           key={value}
-                          onClick={() => setWizard((w) => ({ ...w, usagePeriod: value }))}
+                          onClick={() =>
+                            setWizard((w) => ({ ...w, usagePeriod: value }))
+                          }
                           className={`flex-1 rounded-xl px-3 py-2.5 text-xs text-center transition-all border ${
                             wizard.usagePeriod === value
                               ? "bg-blue-600 border-blue-500 text-white"
@@ -495,9 +786,12 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
           {wizardStep === "step3" && (
             <div className="space-y-4">
               <div className="mb-2">
-                <h3 className="text-white font-medium text-sm">Site information</h3>
+                <h3 className="text-white font-medium text-sm">
+                  Site information
+                </h3>
                 <p className="text-slate-500 text-xs mt-1">
-                  Provide any data you already have. Wave height and wind will be auto-fetched by the AI if left blank.
+                  Provide any data you already have. Wave height and wind will
+                  be auto-fetched by the AI if left blank.
                 </p>
               </div>
 
@@ -505,17 +799,23 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1.5">
                   Water depth at site
-                  <span className="ml-1.5 text-amber-400 font-normal">⚠ Critical — min. 2.0 m required</span>
+                  <span className="ml-1.5 text-amber-400 font-normal">
+                    ⚠ Critical — min. 2.0 m required
+                  </span>
                 </label>
                 <input
                   type="text"
                   value={wizard.waterDepth}
-                  onChange={(e) => setWizard((w) => ({ ...w, waterDepth: e.target.value }))}
+                  onChange={(e) =>
+                    setWizard((w) => ({ ...w, waterDepth: e.target.value }))
+                  }
                   placeholder="e.g. 4.5 m — or leave blank if unknown"
                   className="w-full bg-slate-800 text-white placeholder-slate-600 rounded-xl px-3 py-2.5 text-sm border border-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
                 />
                 <p className="text-slate-600 text-[10px] mt-1.5">
-                  Depth data cannot be auto-fetched. A client estimate or site survey value is preferred. If unknown, the AI will flag it for on-site confirmation.
+                  Depth data cannot be auto-fetched. A client estimate or site
+                  survey value is preferred. If unknown, the AI will flag it for
+                  on-site confirmation.
                 </p>
               </div>
 
@@ -523,17 +823,22 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1.5">
                   Significant wave height
-                  <span className="ml-1.5 text-slate-500 font-normal">(optional)</span>
+                  <span className="ml-1.5 text-slate-500 font-normal">
+                    (optional)
+                  </span>
                 </label>
                 <input
                   type="text"
                   value={wizard.waveHeight}
-                  onChange={(e) => setWizard((w) => ({ ...w, waveHeight: e.target.value }))}
+                  onChange={(e) =>
+                    setWizard((w) => ({ ...w, waveHeight: e.target.value }))
+                  }
                   placeholder="Leave blank — AI fetches from weather API"
                   className="w-full bg-slate-800 text-white placeholder-slate-600 rounded-xl px-3 py-2.5 text-sm border border-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
                 />
                 <p className="text-slate-600 text-[10px] mt-1.5">
-                  Max 0.3 m without breakwater. Leave blank to use real-time weather data.
+                  Max 0.3 m without breakwater. Leave blank to use real-time
+                  weather data.
                 </p>
               </div>
 
@@ -541,11 +846,18 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1.5">
                   Additional notes from client
-                  <span className="ml-1.5 text-slate-500 font-normal">(optional)</span>
+                  <span className="ml-1.5 text-slate-500 font-normal">
+                    (optional)
+                  </span>
                 </label>
                 <textarea
                   value={wizard.additionalNotes}
-                  onChange={(e) => setWizard((w) => ({ ...w, additionalNotes: e.target.value }))}
+                  onChange={(e) =>
+                    setWizard((w) => ({
+                      ...w,
+                      additionalNotes: e.target.value,
+                    }))
+                  }
                   placeholder="e.g. protected bay, icy winters, rocky seabed, client already has a building permit..."
                   rows={3}
                   className="w-full bg-slate-800 text-white placeholder-slate-600 rounded-xl px-3 py-2.5 text-sm border border-slate-700 focus:outline-none focus:border-blue-500 transition-colors resize-none"
@@ -554,7 +866,11 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
 
               <div className="flex gap-2 pt-1">
                 <button
-                  onClick={() => setWizardStep(wizard.projectType === "residential" ? "step1" : "step2")}
+                  onClick={() =>
+                    setWizardStep(
+                      wizard.projectType === "residential" ? "step1" : "step2",
+                    )
+                  }
                   className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-400 py-2.5 rounded-xl text-xs transition-colors"
                 >
                   ← Back
@@ -579,7 +895,10 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
             <div className="px-4 py-2 bg-slate-900/60 border-b border-slate-800 shrink-0">
               <div className="flex items-center gap-2 text-xs text-slate-400">
                 <span>📍</span>
-                <span>{selectedLocation.lat.toFixed(4)}°N, {selectedLocation.lng.toFixed(4)}°E</span>
+                <span>
+                  {selectedLocation.lat.toFixed(4)}°N,{" "}
+                  {selectedLocation.lng.toFixed(4)}°E
+                </span>
                 <span className="text-slate-600">·</span>
                 <span className="text-blue-400">{analysisLabel}</span>
               </div>
@@ -589,12 +908,16 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
           {/* Messages */}
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
             {messages.map((message) => {
-              if (message.role !== "user" && message.role !== "assistant") return null;
+              if (message.role !== "user" && message.role !== "assistant")
+                return null;
               const isUser = message.role === "user";
               const isFirstMessage = message.id === firstMessageId;
 
               return (
-                <div key={message.id} className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+                <div
+                  key={message.id}
+                  className={`flex ${isUser ? "justify-end" : "justify-start"}`}
+                >
                   <div
                     className={`max-w-[90%] rounded-xl px-4 py-3 text-sm leading-relaxed ${
                       isUser
@@ -605,19 +928,30 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
                     {/* For the first (wizard-generated) message, show a summary instead of the raw prompt */}
                     {isUser && isFirstMessage ? (
                       <div className="text-xs opacity-80">
-                        <div className="font-medium mb-1">Analysis request sent</div>
-                        <div>{analysisLabel} · {selectedLocation?.lat.toFixed(3)}°N {selectedLocation?.lng.toFixed(3)}°E</div>
-                        {wizard.waterDepth && <div>Depth: {wizard.waterDepth}</div>}
+                        <div className="font-medium mb-1">
+                          Analysis request sent
+                        </div>
+                        <div>
+                          {analysisLabel} · {selectedLocation?.lat.toFixed(3)}°N{" "}
+                          {selectedLocation?.lng.toFixed(3)}°E
+                        </div>
+                        {wizard.waterDepth && (
+                          <div>Depth: {wizard.waterDepth}</div>
+                        )}
                       </div>
                     ) : (
                       <>
-                        {!isUser && message.toolInvocations && message.toolInvocations.length > 0 && (
-                          <div className="flex items-center gap-2 text-blue-400 text-xs mb-2 pb-2 border-b border-slate-700">
-                            <div className="w-3 h-3 border border-blue-400 border-t-transparent rounded-full animate-spin" />
-                            Fetching marine conditions...
-                          </div>
-                        )}
-                        <div className="whitespace-pre-wrap">{message.content}</div>
+                        {!isUser &&
+                          message.toolInvocations &&
+                          message.toolInvocations.length > 0 && (
+                            <div className="flex items-center gap-2 text-blue-400 text-xs mb-2 pb-2 border-b border-slate-700">
+                              <div className="w-3 h-3 border border-blue-400 border-t-transparent rounded-full animate-spin" />
+                              Fetching marine conditions...
+                            </div>
+                          )}
+                        <div className="whitespace-pre-wrap">
+                          {message.content}
+                        </div>
                       </>
                     )}
                   </div>
@@ -634,7 +968,9 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
                       <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce [animation-delay:150ms]" />
                       <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce [animation-delay:300ms]" />
                     </div>
-                    <span className="text-xs">Analyzing marine conditions...</span>
+                    <span className="text-xs">
+                      Analyzing marine conditions...
+                    </span>
                   </div>
                 </div>
               </div>
@@ -643,9 +979,9 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Generate proposal button */}
+          {/* Action buttons */}
           {hasAiResponse && !isLoading && (
-            <div className="px-4 py-2 border-t border-slate-800 bg-slate-900/50 shrink-0">
+            <div className="px-4 py-2 border-t border-slate-800 bg-slate-900/50 shrink-0 space-y-2">
               <button
                 onClick={handleGenerateProposal}
                 className="w-full bg-emerald-700 hover:bg-emerald-600 text-white py-2.5 px-4 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
@@ -653,11 +989,22 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
                 <span>📄</span>
                 Generate Preliminary Proposal
               </button>
+              <button
+                onClick={handleDownloadSummary}
+                disabled={isPdfGenerating}
+                className="w-full bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed text-white py-2.5 px-4 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                <span>{isPdfGenerating ? "⏳" : "📥"}</span>
+                {isPdfGenerating ? "Generating PDF…" : "Download Summary PDF"}
+              </button>
             </div>
           )}
 
           {/* Follow-up input */}
-          <form onSubmit={handleSubmit} className="px-4 py-3 border-t border-slate-800 shrink-0">
+          <form
+            onSubmit={handleSubmit}
+            className="px-4 py-3 border-t border-slate-800 shrink-0"
+          >
             <div className="flex gap-2">
               <input
                 value={input}
