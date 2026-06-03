@@ -15,7 +15,7 @@ interface PricingItem {
 }
 type SuitabilityStatus = "SUITABLE" | "CONDITIONAL" | "UNSUITABLE";
 
-interface ParsedAssessment {
+export interface ParsedAssessment {
   location: string;
   date: string;
   siteConditions: SiteCondition[];
@@ -41,7 +41,7 @@ function splitPermits(line: string): string[] {
     .filter(Boolean);
 }
 
-function parseAssessment(content: string): ParsedAssessment {
+export function parseAssessment(content: string): ParsedAssessment {
   const out: ParsedAssessment = {
     location: "",
     date: "",

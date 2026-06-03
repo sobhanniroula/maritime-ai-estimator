@@ -4,7 +4,7 @@ import { useChat } from "ai/react";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { AssessmentCard, isAssessmentContent } from "./AssessmentCard";
+import { AssessmentCard, isAssessmentContent, parseAssessment } from "./AssessmentCard";
 
 interface SelectedLocation {
   lat: number;
@@ -48,6 +48,15 @@ const EMPTY_WIZARD: WizardData = {
   waveHeight: "",
   additionalNotes: "",
 };
+
+interface ChatHistoryEntry {
+  id: string;
+  title: string;
+  lat: number;
+  lng: number;
+  projectType: string;
+  timestamp: number;
+}
 
 function buildAnalysisPrompt(
   location: SelectedLocation,
@@ -115,6 +124,38 @@ function buildAnalysisPrompt(
   ].join("\n");
 }
 
+function AssessmentSkeleton() {
+  return (
+    <div className="space-y-3 w-full animate-pulse">
+      <div className="pb-2 border-b border-slate-700">
+        <div className="h-2 w-24 bg-slate-700 rounded mb-2" />
+        <div className="h-3 w-40 bg-slate-600 rounded mb-1" />
+        <div className="h-2 w-20 bg-slate-700 rounded mt-1" />
+      </div>
+      <div className="h-12 w-full bg-slate-700/50 rounded-lg border border-slate-700" />
+      <div>
+        <div className="h-2 w-20 bg-slate-700 rounded mb-2" />
+        <div className="grid grid-cols-2 gap-1">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="bg-slate-700/50 rounded-lg h-12" />
+          ))}
+        </div>
+      </div>
+      <div>
+        <div className="h-2 w-24 bg-slate-700 rounded mb-2" />
+        <div className="bg-slate-700/50 rounded-lg h-16" />
+      </div>
+      <div>
+        <div className="h-2 w-20 bg-slate-700 rounded mb-2" />
+        <div className="space-y-1.5">
+          <div className="bg-slate-700/50 rounded h-4 w-3/4" />
+          <div className="bg-slate-700/50 rounded h-4 w-1/2" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function WizardProgress({ step }: { step: WizardStep }) {
   const stepMap: Partial<Record<WizardStep, number>> = {
     confirming: 0,
@@ -167,6 +208,9 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
   const [firstMessageId, setFirstMessageId] = useState<string | null>(null);
   const [isPdfGenerating, setIsPdfGenerating] = useState(false);
   const [proposalSentAt, setProposalSentAt] = useState<number | null>(null);
+  const [copiedProposal, setCopiedProposal] = useState(false);
+  const [sidebarView, setSidebarView] = useState<"chat" | "history">("chat");
+  const [chatHistory, setChatHistory] = useState<ChatHistoryEntry[]>([]);
 
   const {
     messages,
@@ -193,6 +237,35 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("maritime-ai-chat-history");
+      if (stored) setChatHistory(JSON.parse(stored));
+    } catch {}
+  }, []);
+
+  function handleNewChat() {
+    setWizardStep("idle");
+    setWizard(EMPTY_WIZARD);
+    setMessages([]);
+    setFirstMessageId(null);
+    setProposalSentAt(null);
+    setSidebarView("chat");
+  }
+
+  async function handleCopyProposal() {
+    if (proposalSentAt === null) return;
+    const proposalMsg = messages
+      .slice(proposalSentAt)
+      .find((m) => m.role === "assistant" && m.content.trim());
+    if (!proposalMsg) return;
+    try {
+      await navigator.clipboard.writeText(proposalMsg.content);
+      setCopiedProposal(true);
+      setTimeout(() => setCopiedProposal(false), 5000);
+    } catch {}
+  }
+
   function handleProjectType(type: ProjectType) {
     if (type === "residential") {
       // Residential has no meaningful step 2 - jump straight to site data
@@ -215,6 +288,33 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
     if (!selectedLocation) return;
     const prompt = buildAnalysisPrompt(selectedLocation, wizard);
     setWizardStep("chatting");
+    const typeLabels: Record<string, string> = {
+      infrastructure: "Floating Infrastructure",
+      pool: "Floating Pool",
+      event: "Event Platform",
+      residential: "Residential Housing",
+    };
+    const typeLabel = wizard.projectType
+      ? (typeLabels[wizard.projectType] ?? "Analysis")
+      : "Analysis";
+    const entry: ChatHistoryEntry = {
+      id: Date.now().toString(),
+      title: `${typeLabel} - ${selectedLocation.lat.toFixed(3)}N, ${selectedLocation.lng.toFixed(3)}E`,
+      lat: selectedLocation.lat,
+      lng: selectedLocation.lng,
+      projectType: wizard.projectType ?? "",
+      timestamp: Date.now(),
+    };
+    setChatHistory((prev) => {
+      const updated = [entry, ...prev].slice(0, 20);
+      try {
+        localStorage.setItem(
+          "maritime-ai-chat-history",
+          JSON.stringify(updated),
+        );
+      } catch {}
+      return updated;
+    });
     const msgId = await append({ role: "user", content: prompt });
     if (msgId) setFirstMessageId(msgId);
   }
@@ -235,87 +335,268 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
       const doc = new jsPDF({ unit: "mm", format: "a4" });
 
       const pageW = doc.internal.pageSize.getWidth();
-      const margin = 18;
-      const contentW = pageW - margin * 2;
+      const pageH = doc.internal.pageSize.getHeight();
+      const mg = 14;
+      const cw = pageW - mg * 2;
 
-      // Header
-      doc.setFontSize(15);
+      // Fill page with dark background
+      doc.setFillColor(15, 23, 42);
+      doc.rect(0, 0, pageW, pageH, "F");
+
+      // Header band
+      doc.setFillColor(8, 14, 30);
+      doc.rect(0, 0, pageW, 36, "F");
+      doc.setFillColor(59, 130, 246);
+      doc.rect(0, 0, 3, 36, "F");
+
+      doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
-      doc.text("MARITIME AI ESTIMATOR", margin, 21);
+      doc.setTextColor(226, 232, 240);
+      doc.text("MARITIME AI ESTIMATOR", mg + 3, 13);
 
-      doc.setFontSize(10);
+      doc.setFontSize(8);
       doc.setFont("helvetica", "normal");
-      doc.text("Preliminary Site Assessment", margin, 28);
+      doc.setTextColor(147, 197, 253);
+      doc.text(
+        "Preliminary Site Assessment  -  Bluet Oy Internal Use",
+        mg + 3,
+        20,
+      );
 
-      const metaParts: string[] = [];
-      if (selectedLocation)
-        metaParts.push(
-          `${selectedLocation.lat.toFixed(4)}°N, ${selectedLocation.lng.toFixed(4)}°E`,
-        );
-      metaParts.push(new Date().toLocaleDateString("en-FI"));
-      doc.text(metaParts.join("   ·   "), margin, 35);
+      const metaLine = [
+        selectedLocation
+          ? `${selectedLocation.lat.toFixed(4)}N, ${selectedLocation.lng.toFixed(4)}E`
+          : "",
+        new Date().toLocaleDateString("en-FI"),
+        analysisLabel ?? "",
+      ]
+        .filter(Boolean)
+        .join("   .   ");
+      doc.setFontSize(7.5);
+      doc.setTextColor(100, 116, 139);
+      doc.text(metaLine, mg + 3, 28);
 
-      if (analysisLabel) {
-        doc.text(`Project type: ${analysisLabel}`, margin, 41);
-      }
+      let y = 46;
 
-      doc.setDrawColor(80, 80, 80);
-      doc.line(margin, 45, pageW - margin, 45);
-
-      let y = 53;
-
-      const aiMessages = messages.filter(
+      const assessMsg = messages.find(
         (m, idx) =>
           m.role === "assistant" &&
           m.content.trim() &&
           (proposalSentAt === null || idx < proposalSentAt),
       );
 
-      aiMessages.forEach((msg, idx) => {
-        if (idx > 0) {
-          y += 5;
-          doc.setDrawColor(180, 180, 180);
-          doc.line(margin, y, pageW - margin, y);
+      const drawSection = (title: string) => {
+        doc.setFillColor(59, 130, 246);
+        doc.rect(mg, y, 2.5, 5.5, "F");
+        doc.setFontSize(7);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(147, 197, 253);
+        doc.text(title, mg + 5, y + 4);
+        y += 9;
+      };
+
+      const checkPage = (needed: number) => {
+        if (y + needed > pageH - 18) {
+          doc.addPage();
+          doc.setFillColor(15, 23, 42);
+          doc.rect(0, 0, pageW, pageH, "F");
+          y = 16;
+        }
+      };
+
+      if (assessMsg) {
+        const d = parseAssessment(assessMsg.content);
+
+        // Suitability badge
+        if (d.suitabilityStatus) {
+          const isSuitable = d.suitabilityStatus === "SUITABLE";
+          const isConditional = d.suitabilityStatus === "CONDITIONAL";
+          const bgR = isSuitable ? 6 : isConditional ? 55 : 50;
+          const bgG = isSuitable ? 78 : isConditional ? 32 : 10;
+          const bgB = isSuitable ? 59 : isConditional ? 7 : 10;
+          const fgR = isSuitable ? 52 : isConditional ? 251 : 248;
+          const fgG = isSuitable ? 211 : isConditional ? 191 : 113;
+          const fgB = isSuitable ? 153 : isConditional ? 36 : 113;
+
+          checkPage(22);
+          doc.setFillColor(bgR, bgG, bgB);
+          doc.rect(mg, y, cw, 18, "F");
+          doc.setDrawColor(fgR, fgG, fgB);
+          doc.setLineWidth(0.4);
+          doc.rect(mg, y, cw, 18, "D");
+
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(fgR, fgG, fgB);
+          doc.text(d.suitabilityStatus, mg + 5, y + 7);
+
+          if (d.suitabilityReason) {
+            doc.setFontSize(7.5);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(226, 232, 240);
+            const reasonLines = doc.splitTextToSize(
+              d.suitabilityReason,
+              cw - 10,
+            ) as string[];
+            doc.text(reasonLines[0] ?? "", mg + 5, y + 13);
+          }
+          y += 24;
+        }
+
+        // Site conditions grid
+        if (d.siteConditions.length > 0) {
+          const rows = Math.ceil(d.siteConditions.length / 2);
+          checkPage(10 + rows * 15);
+          drawSection("SITE CONDITIONS");
+          const colW = (cw - 2) / 2;
+          const tileH = 13;
+          d.siteConditions.forEach((c, i) => {
+            const col = i % 2;
+            const row = Math.floor(i / 2);
+            const tx = mg + col * (colW + 2);
+            const ty = y + row * (tileH + 1.5);
+            doc.setFillColor(30, 41, 59);
+            doc.rect(tx, ty, colW, tileH, "F");
+            doc.setFontSize(5.5);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(71, 85, 105);
+            doc.text(c.label.toUpperCase(), tx + 3, ty + 4.5);
+            doc.setFontSize(7.5);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(226, 232, 240);
+            const valLines = doc.splitTextToSize(c.value, colW - 6) as string[];
+            doc.text(valLines[0] ?? "", tx + 3, ty + 10);
+          });
+          y += rows * (tileH + 1.5) + 5;
+        }
+
+        // Recommended solution
+        if (d.solution.length > 0) {
+          checkPage(12 + d.solution.length * 16);
+          drawSection("RECOMMENDED SOLUTION");
+          d.solution.forEach((s) => {
+            checkPage(16);
+            doc.setFillColor(30, 41, 59);
+            doc.rect(mg, y, cw, 14, "F");
+            doc.setFontSize(6);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(71, 85, 105);
+            doc.text(s.type.toUpperCase(), mg + 3, y + 5.5);
+            doc.setFontSize(8);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(147, 197, 253);
+            const nameLines = doc.splitTextToSize(s.name, cw - 28) as string[];
+            doc.text(nameLines[0] ?? "", mg + 22, y + 5.5);
+            if (s.rationale) {
+              doc.setFontSize(7);
+              doc.setFont("helvetica", "normal");
+              doc.setTextColor(148, 163, 184);
+              const ratLines = doc.splitTextToSize(
+                s.rationale,
+                cw - 28,
+              ) as string[];
+              doc.text(ratLines[0] ?? "", mg + 22, y + 10.5);
+            }
+            y += 16;
+          });
+          y += 3;
+        }
+
+        // Indicative pricing
+        if (d.pricing.length > 0) {
+          checkPage(12 + d.pricing.length * 11);
+          drawSection("INDICATIVE PRICING (ex-works)");
+          doc.setFillColor(30, 41, 59);
+          doc.rect(mg, y, cw, d.pricing.length * 11, "F");
+          d.pricing.forEach((p, i) => {
+            doc.setFontSize(6.5);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(71, 85, 105);
+            doc.text(p.label.toUpperCase(), mg + 3, y + 7.5);
+            doc.setFontSize(7.5);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(226, 232, 240);
+            const valLines = doc.splitTextToSize(
+              p.value,
+              cw - 35,
+            ) as string[];
+            doc.text(valLines[0] ?? "", pageW - mg - 3, y + 7.5, {
+              align: "right",
+            });
+            if (i < d.pricing.length - 1) {
+              doc.setDrawColor(51, 65, 85);
+              doc.setLineWidth(0.3);
+              doc.line(mg + 3, y + 11, pageW - mg - 3, y + 11);
+            }
+            y += 11;
+          });
           y += 7;
         }
 
-        doc.setFontSize(8);
-        doc.setFont("courier", "normal");
+        // Permit checklist
+        if (d.permits.length > 0) {
+          checkPage(12 + d.permits.length * 7);
+          drawSection("PERMIT CHECKLIST (FINLAND)");
+          d.permits.forEach((p) => {
+            checkPage(7);
+            doc.setFontSize(7.5);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(148, 163, 184);
+            doc.text("[ ]", mg, y + 0.5);
+            const pLines = doc.splitTextToSize(p, cw - 10) as string[];
+            doc.text(pLines[0] ?? "", mg + 8, y + 0.5);
+            y += 7;
+          });
+          y += 3;
+        }
 
-        const lines = doc.splitTextToSize(msg.content, contentW);
-        (lines as string[]).forEach((line) => {
-          if (y > 278) {
-            doc.addPage();
-            y = 20;
-          }
-          doc.text(line, margin, y);
-          y += 4.5;
-        });
-      });
+        // Next steps
+        if (d.nextSteps.length > 0) {
+          checkPage(12 + d.nextSteps.length * 7);
+          drawSection("NEXT STEPS");
+          d.nextSteps.forEach((s) => {
+            checkPage(7);
+            doc.setFontSize(7.5);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(148, 163, 184);
+            doc.text(">", mg, y + 0.5);
+            const sLines = doc.splitTextToSize(s, cw - 7) as string[];
+            doc.text(sLines[0] ?? "", mg + 5, y + 0.5);
+            y += 7;
+          });
+        }
+      } else {
+        doc.setFontSize(9);
+        doc.setTextColor(148, 163, 184);
+        doc.text("No assessment data available.", mg, y);
+      }
 
-      // Footer on every page
-      const totalPages = doc.getNumberOfPages();
-      for (let p = 1; p <= totalPages; p++) {
+      // Footer on all pages
+      const total = doc.getNumberOfPages();
+      for (let p = 1; p <= total; p++) {
         doc.setPage(p);
-        doc.setFontSize(7);
+        doc.setFillColor(8, 14, 30);
+        doc.rect(0, pageH - 11, pageW, 11, "F");
+        doc.setFillColor(59, 130, 246);
+        doc.rect(0, pageH - 11, 3, 11, "F");
+        doc.setFontSize(6.5);
         doc.setFont("helvetica", "normal");
-        doc.setTextColor(140);
+        doc.setTextColor(71, 85, 105);
         doc.text(
-          "MARITIME AI ESTIMATOR  ·  For internal sales use only  ·  Indicative, not a binding offer",
-          margin,
-          291,
+          "MARITIME AI ESTIMATOR  -  Internal use only  -  Indicative, not a binding offer",
+          mg + 3,
+          pageH - 4,
         );
-        doc.text(`${p} / ${totalPages}`, pageW - margin, 291, {
+        doc.text(`${p} / ${total}`, pageW - mg, pageH - 4, {
           align: "right",
         });
-        doc.setTextColor(0);
       }
 
       const slug = selectedLocation
         ? `${selectedLocation.lat.toFixed(2)}N-${selectedLocation.lng.toFixed(2)}E`
         : "site";
       doc.save(
-        `maritime-ai-estimator-assessment-${slug}-${new Date().toISOString().slice(0, 10)}.pdf`,
+        `maritime-ai-assessment-${slug}-${new Date().toISOString().slice(0, 10)}.pdf`,
       );
     } finally {
       setIsPdfGenerating(false);
@@ -338,11 +619,37 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
     <div className="flex flex-col h-full bg-slate-950 border-l border-slate-800">
       {/* Header */}
       <div className="px-5 py-4 border-b border-slate-800 bg-slate-900 shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <h2 className="text-white font-semibold text-sm">
-            AI Marine Consultant
-          </h2>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <h2 className="text-white font-semibold text-sm">
+              AI Marine Consultant
+            </h2>
+          </div>
+          <div className="flex items-center gap-1">
+            {wizardStep === "chatting" && (
+              <button
+                onClick={handleNewChat}
+                title="Start a new analysis"
+                className="text-xs text-slate-400 hover:text-white px-2.5 py-1 rounded-lg hover:bg-slate-800 transition-colors"
+              >
+                + New
+              </button>
+            )}
+            <button
+              onClick={() =>
+                setSidebarView((v) => (v === "history" ? "chat" : "history"))
+              }
+              title="View analysis history"
+              className={`text-xs px-2.5 py-1 rounded-lg transition-colors ${
+                sidebarView === "history"
+                  ? "text-blue-400 bg-blue-950/60"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800"
+              }`}
+            >
+              History
+            </button>
+          </div>
         </div>
         <p className="text-slate-500 text-xs mt-1">
           {wizardStep === "idle" &&
@@ -358,12 +665,61 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
       </div>
 
       {/* Progress bar (shown during wizard only) */}
-      {wizardStep !== "idle" && wizardStep !== "chatting" && (
+      {sidebarView === "chat" && wizardStep !== "idle" && wizardStep !== "chatting" && (
         <WizardProgress step={wizardStep} />
       )}
 
+      {/* History panel */}
+      {sidebarView === "history" && (
+        <div className="flex-1 overflow-y-auto px-4 py-4">
+          <div className="text-[9px] text-slate-500 uppercase tracking-widest mb-3">
+            Recent Analyses
+          </div>
+          {chatHistory.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="text-2xl mb-2">📋</div>
+              <div className="text-slate-500 text-xs">No analyses yet</div>
+              <div className="text-slate-600 text-[10px] mt-1">
+                Run an analysis to see history here
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {chatHistory.map((entry) => (
+                <div
+                  key={entry.id}
+                  className="bg-slate-800/60 border border-slate-700 rounded-xl p-3"
+                >
+                  <div className="text-slate-200 text-xs font-medium leading-snug mb-1.5">
+                    {entry.title}
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] text-slate-500">
+                    <span>
+                      {new Date(entry.timestamp).toLocaleDateString("en-FI", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </span>
+                    <span className="text-slate-700">·</span>
+                    <span>
+                      {entry.lat.toFixed(3)}N, {entry.lng.toFixed(3)}E
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="mt-5 text-center text-[9px] text-slate-600 leading-relaxed px-2">
+            History is stored locally in your browser.
+            <br />
+            Click-to-restore will be available in a future version.
+          </div>
+        </div>
+      )}
+
       {/* ── WIZARD PANELS ─────────────────────────────────────── */}
-      {wizardStep !== "chatting" && (
+      {sidebarView === "chat" && wizardStep !== "chatting" && (
         <div className="flex-1 overflow-y-auto px-4 py-5">
           {/* IDLE */}
           {wizardStep === "idle" && (
@@ -897,7 +1253,7 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
       )}
 
       {/* ── CHAT PHASE ────────────────────────────────────────── */}
-      {wizardStep === "chatting" && (
+      {sidebarView === "chat" && wizardStep === "chatting" && (
         <>
           {/* Context chip  - shows what was analyzed */}
           {analysisLabel && selectedLocation && (
@@ -916,11 +1272,17 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-            {messages.map((message) => {
+            {messages.map((message, msgIdx) => {
               if (message.role !== "user" && message.role !== "assistant")
                 return null;
               const isUser = message.role === "user";
               const isFirstMessage = message.id === firstMessageId;
+              const isProposalPrompt =
+                isUser && proposalSentAt !== null && msgIdx === proposalSentAt;
+              // Hide the currently streaming assistant message - skeleton shows instead
+              const isCurrentlyStreaming =
+                !isUser && isLoading && msgIdx === messages.length - 1;
+              if (isCurrentlyStreaming) return null;
 
               return (
                 <div
@@ -934,7 +1296,7 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
                         : "bg-slate-800 text-slate-100 rounded-bl-sm"
                     }`}
                   >
-                    {/* For the first (wizard-generated) message, show a summary instead of the raw prompt */}
+                    {/* Auto-generated prompts: show compact labels instead of raw text */}
                     {isUser && isFirstMessage ? (
                       <div className="text-xs opacity-80">
                         <div className="font-medium mb-1">
@@ -947,6 +1309,12 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
                         {wizard.waterDepth && (
                           <div>Depth: {wizard.waterDepth}</div>
                         )}
+                      </div>
+                    ) : isUser && isProposalPrompt ? (
+                      <div className="text-xs opacity-80">
+                        <div className="font-medium">
+                          Generating preliminary proposal...
+                        </div>
                       </div>
                     ) : (
                       <>
@@ -991,18 +1359,24 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
             })}
 
             {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-slate-800 rounded-xl rounded-bl-sm px-4 py-3">
-                  <div className="flex items-center gap-2 text-slate-400">
-                    <div className="flex gap-1">
-                      <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce [animation-delay:0ms]" />
-                      <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce [animation-delay:150ms]" />
-                      <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce [animation-delay:300ms]" />
+              <div className="flex justify-start w-full">
+                <div className="bg-slate-800 rounded-xl rounded-bl-sm px-4 py-3 max-w-[90%] w-full">
+                  {!hasAiResponse ? (
+                    <AssessmentSkeleton />
+                  ) : (
+                    <div className="flex items-center gap-2 text-slate-400">
+                      <div className="flex gap-1">
+                        <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce [animation-delay:0ms]" />
+                        <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce [animation-delay:150ms]" />
+                        <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce [animation-delay:300ms]" />
+                      </div>
+                      <span className="text-xs">
+                        {proposalSentAt !== null
+                          ? "Writing proposal..."
+                          : "Thinking..."}
+                      </span>
                     </div>
-                    <span className="text-xs">
-                      Analyzing marine conditions...
-                    </span>
-                  </div>
+                  )}
                 </div>
               </div>
             )}
@@ -1014,18 +1388,61 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
           {hasAiResponse && !isLoading && (
             <div className="px-4 py-2 border-t border-slate-800 bg-slate-900/50 shrink-0 space-y-2">
               <button
-                onClick={handleGenerateProposal}
-                disabled={proposalSentAt !== null}
+                onClick={
+                  proposalSentAt !== null
+                    ? handleCopyProposal
+                    : handleGenerateProposal
+                }
                 className={`w-full py-2.5 px-4 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
                   proposalSentAt !== null
-                    ? "bg-slate-800 text-slate-500 cursor-not-allowed"
+                    ? copiedProposal
+                      ? "bg-emerald-900/60 border border-emerald-800 text-emerald-300"
+                      : "bg-slate-700 hover:bg-slate-600 text-white"
                     : "bg-emerald-700 hover:bg-emerald-600 text-white"
                 }`}
               >
-                <span>{proposalSentAt !== null ? "✓" : "📄"}</span>
-                {proposalSentAt !== null
-                  ? "Proposal Generated"
-                  : "Generate Preliminary Proposal"}
+                {proposalSentAt !== null ? (
+                  copiedProposal ? (
+                    <>
+                      <svg
+                        className="w-3.5 h-3.5 shrink-0"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2.5}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-3.5 h-3.5 shrink-0"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                        />
+                      </svg>
+                      Copy Proposal
+                    </>
+                  )
+                ) : (
+                  <>
+                    <span>📄</span>
+                    Generate Preliminary Proposal
+                  </>
+                )}
               </button>
               <button
                 onClick={handleDownloadSummary}
