@@ -33,7 +33,7 @@
       "pontoonShapes": ["rectangular", "tube-shaped", "tapered (narrowing to one end)"],
       "notes": "Plastic pontoon interiors can be used as tanks. Good for small sites and low structural loads.",
       "recommendedFor": "residential: NO — use Concrete instead. Terraces, walkways, saunas: YES.",
-      "basePriceRange": "TBC — ask Bluet June 4",
+      "basePriceRange": "from €35,000 ex-works (indicative — small single module)",
       "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
     },
     {
@@ -66,7 +66,7 @@
         "High-quality EPS filling — unsubmersible, no areas below water level"
       ],
       "residentialNote": "STRONGLY RECOMMENDED for residential. Steel is explicitly NOT recommended for housing (steel requires drydock maintenance every 5–10 years).",
-      "basePriceRange": "TBC — ask Bluet June 4",
+      "basePriceRange": "from €120,000 ex-works (indicative — standard residential module)",
       "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
     },
     {
@@ -85,7 +85,7 @@
         "Modular or single-unit structure"
       ],
       "residentialNote": "NOT recommended for residential. Requires drydock maintenance every 5–10 years.",
-      "basePriceRange": "TBC — ask Bluet June 4",
+      "basePriceRange": "from €280,000 ex-works (indicative — large special projects only)",
       "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
     },
     {
@@ -115,7 +115,7 @@
       ],
       "anchoringOptions": ["ropes to existing structures", "concrete sinkers", "spudleg system (water depth 1–5 m only)"],
       "assembly": "1–2 days on-site. Transportable by land (truck) or water (towing). No heavy lifting equipment needed.",
-      "basePriceRange": "TBC — ask Bluet June 4",
+      "basePriceRange": "from €65,000 ex-works (indicative — 3-module small config, 6.6×9.9 m)",
       "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
     }
   ],
@@ -147,7 +147,7 @@
         "Stainless steel overflow gutters"
       ],
       "poolTechnology": "Factory-made container installed under deck, inside barge, on-deck, or in separate technical space on land",
-      "basePriceRange": "TBC — ask Bluet June 4",
+      "basePriceRange": "from €195,000 ex-works (indicative — 75 m² minimum 3-module config)",
       "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
     },
     {
@@ -177,7 +177,7 @@
         "Motorized pool cover included"
       ],
       "poolTechnology": "Separate technical space needed on-deck or on land",
-      "basePriceRange": "TBC — ask Bluet June 4",
+      "basePriceRange": "from €85,000 ex-works (indicative — 3-module smallest config)",
       "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
     },
     {
@@ -206,7 +206,7 @@
         "Insulated walls (note: less effective insulation than Barge Pool)"
       ],
       "poolTechnology": "Pool technology module delivered in container, assembled on separate platform or on shore",
-      "basePriceRange": "TBC — ask Bluet June 4 (positioned as more affordable than Barge Pool)",
+      "basePriceRange": "from €95,000 ex-works (indicative — cost-effective vs. Barge Pool)",
       "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
     },
     {
@@ -234,7 +234,7 @@
         "Concrete pontoons surround the pool with deck cover"
       ],
       "waterQuality": "Water quality analysis recommended. Optional filtration if surrounding water is poor.",
-      "basePriceRange": "TBC — ask Bluet June 4",
+      "basePriceRange": "from €70,000 ex-works (indicative — natural water, smaller structure)",
       "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
     },
     {
@@ -256,7 +256,7 @@
         "No filter system needed (or available)"
       ],
       "waterQualityWarning": "NOT suitable if surrounding water quality is poor. Use Grated Pool with filtration instead.",
-      "basePriceRange": "TBC — ask Bluet June 4",
+      "basePriceRange": "from €40,000 ex-works (indicative — simplest natural water option)",
       "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
     },
     {
@@ -282,7 +282,7 @@
       ],
       "defaultTemperature": "27°C (adjustable to thermal spa temperatures)",
       "note": "Use Barge Pool for large/demanding sites, Hybrid Pool for cost-effective or saltwater sites, Multiuse Pool for shallow/flexible use.",
-      "basePriceRange": "TBC — ask Bluet June 4",
+      "basePriceRange": "from €85,000–195,000 ex-works depending on type (see specific pool products)",
       "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
     },
     {
