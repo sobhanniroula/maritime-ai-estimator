@@ -1,17 +1,3 @@
-/**
- * ProposalPreview.tsx
- *
- * A modal overlay that displays the AI's generated proposal in a clean,
- * printable format. Also provides a "Download as Text" button so the user
- * can save it and share it with their client.
- *
- * HOW IT WORKS:
- * - The parent page detects when the AI has generated a proposal (long response)
- * - It passes that content here as the `proposalContent` prop
- * - We render it in a styled document format
- * - The download button creates a .txt file using the browser's Blob API
- */
-
 "use client";
 
 interface ProposalPreviewProps {
@@ -25,7 +11,6 @@ export default function ProposalPreview({
   location,
   onClose,
 }: ProposalPreviewProps) {
-  // Download the proposal as a plain text file
   function handleDownload() {
     const header = `MARITIME INFRASTRUCTURE: PRELIMINARY PROJECT PROPOSAL
 Generated: ${new Date().toLocaleDateString("en-FI", {
@@ -44,54 +29,46 @@ This is a preliminary AI-generated estimate. Final pricing subject to on-site su
 Contact Bluet Oy for a detailed engineering assessment.
 `;
 
-    // Create a Blob (binary large object) containing the text content
     const blob = new Blob([header], { type: "text/plain;charset=utf-8" });
-    // Create a temporary URL pointing to the blob
     const url = URL.createObjectURL(blob);
-    // Create a hidden <a> tag and "click" it to trigger the download
     const a = document.createElement("a");
     a.href = url;
     a.download = `bluet-proposal-${Date.now()}.txt`;
     a.click();
-    // Clean up the temporary URL
     URL.revokeObjectURL(url);
   }
 
   return (
-    // Full-screen semi-transparent overlay
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl">
         {/* Modal header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
           <div>
-            <h2 className="text-white font-semibold">
+            <h2 className="text-slate-900 dark:text-white font-semibold">
               📄 Preliminary Project Proposal
             </h2>
             {location && (
-              <p className="text-slate-400 text-xs mt-0.5">
+              <p className="text-slate-500 text-xs mt-0.5">
                 {location.lat.toFixed(4)}°N, {location.lng.toFixed(4)}°E
               </p>
             )}
           </div>
           <div className="flex items-center gap-2">
-            {/* Download button: saves the proposal as a .txt file */}
             <button
               onClick={handleDownload}
               className="bg-emerald-700 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5"
             >
               ⬇ Download .txt
             </button>
-            {/* Print button: browser's native print dialog */}
             <button
               onClick={() => window.print()}
-              className="bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+              className="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
             >
               🖨 Print
             </button>
-            {/* Close button */}
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white ml-2 text-xl leading-none"
+              className="text-slate-400 hover:text-slate-700 dark:hover:text-white ml-2 text-xl leading-none"
             >
               ×
             </button>
@@ -101,10 +78,10 @@ Contact Bluet Oy for a detailed engineering assessment.
         {/* Proposal content */}
         <div className="overflow-y-auto flex-1 px-6 py-5">
           {/* Letterhead */}
-          <div className="border-b border-slate-700 pb-4 mb-4">
+          <div className="border-b border-slate-200 dark:border-slate-700 pb-4 mb-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-blue-400 font-bold text-lg">Bluet Oy</div>
+                <div className="text-blue-600 dark:text-blue-400 font-bold text-lg">Bluet Oy</div>
                 <div className="text-slate-500 text-xs">
                   Sustainable Floating Construction Solutions
                 </div>
@@ -117,12 +94,12 @@ Contact Bluet Oy for a detailed engineering assessment.
           </div>
 
           {/* The AI's proposal text */}
-          <div className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">
+          <div className="text-slate-700 dark:text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">
             {content}
           </div>
 
           {/* Disclaimer footer */}
-          <div className="mt-6 pt-4 border-t border-slate-700 text-slate-500 text-xs">
+          <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700 text-slate-500 text-xs">
             This is a preliminary AI-generated estimate based on publicly
             available environmental data. Final pricing and specifications are
             subject to an on-site survey by a Bluet engineering team. All prices

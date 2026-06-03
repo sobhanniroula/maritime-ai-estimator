@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,11 +17,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className="h-full dark" suppressHydrationWarning>
       {/* suppressHydrationWarning: silences warnings caused by browser extensions
-          (e.g. Grammarly) that inject extra attributes onto <body> after React renders */}
+          (e.g. Grammarly) that inject extra attributes onto <body> after React renders,
+          and also suppresses the dark/light class mismatch during client hydration */}
       <body className={`${inter.className} h-full`} suppressHydrationWarning>
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

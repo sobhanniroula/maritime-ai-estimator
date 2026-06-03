@@ -2,13 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Override the default white body background */
-body {
-  background-color: #020817;
-  color: #f1f5f9;
-}
-
-/* Make the app fill the full viewport height without scrollbars */
 html,
 body,
 #__next {
@@ -16,17 +9,33 @@ body,
   overflow: hidden;
 }
 
-/* Custom scrollbar styling for the dark theme */
+/* Scrollbar - light mode */
 ::-webkit-scrollbar {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #1e293b;
+  background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: #cbd5e1;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Scrollbar - dark mode */
+.dark ::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
   background: #64748b;
+}
+
+/* Slightly boost contrast of dark map tiles */
+.dark .leaflet-tile-pane {
+  filter: brightness(1.3) contrast(1.05);
 }
