@@ -2,7 +2,7 @@
   "meta": {
     "lastUpdated": "2026-06-03",
     "source": "Bluet official product brochures and technical PDFs",
-    "pricingStatus": "PLACEHOLDER — confirm real 'starting from' prices with Bluet at June 4 workshop",
+    "pricingStatus": "PLACEHOLDER - confirm real 'starting from' prices with Bluet at June 4 workshop",
     "note": "Site depth minimums are for LLW (Lowest Low Water). Add local tidal/water level variation on top."
   },
 
@@ -32,9 +32,9 @@
       "materials": ["plastic pontoons (HDPE)", "lightweight concrete pontoons"],
       "pontoonShapes": ["rectangular", "tube-shaped", "tapered (narrowing to one end)"],
       "notes": "Plastic pontoon interiors can be used as tanks. Good for small sites and low structural loads.",
-      "recommendedFor": "residential: NO — use Concrete instead. Terraces, walkways, saunas: YES.",
-      "basePriceRange": "from €35,000 ex-works (indicative — small single module)",
-      "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
+      "recommendedFor": "residential: NO, use Concrete instead. Terraces, walkways, saunas: YES.",
+      "basePriceRange": "from €35,000 ex-works (indicative - small single module)",
+      "variableFeesNote": "Transport, installation, local supervision, localization, permits - quoted separately as % of product fee"
     },
     {
       "id": "concrete-foundation",
@@ -63,11 +63,11 @@
         "Long-lasting, low-maintenance",
         "Delivered with full MEP services (water, sewer, electricity)",
         "Type-approved and tested reinforced concrete",
-        "High-quality EPS filling — unsubmersible, no areas below water level"
+        "High-quality EPS filling  - unsubmersible, no areas below water level"
       ],
       "residentialNote": "STRONGLY RECOMMENDED for residential. Steel is explicitly NOT recommended for housing (steel requires drydock maintenance every 5–10 years).",
-      "basePriceRange": "from €120,000 ex-works (indicative — standard residential module)",
-      "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
+      "basePriceRange": "from €120,000 ex-works (indicative - standard residential module)",
+      "variableFeesNote": "Transport, installation, local supervision, localization, permits - quoted separately as % of product fee"
     },
     {
       "id": "steel-foundation",
@@ -85,8 +85,8 @@
         "Modular or single-unit structure"
       ],
       "residentialNote": "NOT recommended for residential. Requires drydock maintenance every 5–10 years.",
-      "basePriceRange": "from €280,000 ex-works (indicative — large special projects only)",
-      "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
+      "basePriceRange": "from €280,000 ex-works (indicative - large special projects only)",
+      "variableFeesNote": "Transport, installation, local supervision, localization, permits - quoted separately as % of product fee"
     },
     {
       "id": "multiuse-platform",
@@ -115,8 +115,8 @@
       ],
       "anchoringOptions": ["ropes to existing structures", "concrete sinkers", "spudleg system (water depth 1–5 m only)"],
       "assembly": "1–2 days on-site. Transportable by land (truck) or water (towing). No heavy lifting equipment needed.",
-      "basePriceRange": "from €65,000 ex-works (indicative — 3-module small config, 6.6×9.9 m)",
-      "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
+      "basePriceRange": "from €65,000 ex-works (indicative - 3-module small config, 6.6×9.9 m)",
+      "variableFeesNote": "Transport, installation, local supervision, localization, permits - quoted separately as % of product fee"
     }
   ],
 
@@ -147,15 +147,15 @@
         "Stainless steel overflow gutters"
       ],
       "poolTechnology": "Factory-made container installed under deck, inside barge, on-deck, or in separate technical space on land",
-      "basePriceRange": "from €195,000 ex-works (indicative — 75 m² minimum 3-module config)",
-      "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
+      "basePriceRange": "from €195,000 ex-works (indicative - 75 m² minimum 3-module config)",
+      "variableFeesNote": "Transport, installation, local supervision, localization, permits - quoted separately as % of product fee"
     },
     {
       "id": "multiuse-pool",
       "name": "Bluet® Multiuse Pool",
       "category": "pool",
       "poolFamily": "Heated Pools",
-      "description": "Versatile stainless-steel or coated modular pool. Works for children's wading pools up to trendy spa and nightclub pools. Assembled on water — no large land construction site needed. Can also be installed on land.",
+      "description": "Versatile stainless-steel or coated modular pool. Works for children's wading pools up to trendy spa and nightclub pools. Assembled on water, no large land construction site needed. Can also be installed on land.",
       "bestFor": ["children's pools", "swimming schools", "spa pools", "hotel leisure pools", "nightclub/entertainment pools", "multi-purpose waterfront facilities"],
       "siteRequirements": {
         "minSiteDepthMeters": 1.5,
@@ -171,25 +171,25 @@
       },
       "features": [
         "Modular: scales from children's pool to large leisure pool",
-        "Assembled on water — no heavy lifting equipment",
+        "Assembled on water, no heavy lifting equipment",
         "Land installation also possible",
         "Wide accessory range: underwater benches, RGB lights, massage showers",
         "Motorized pool cover included"
       ],
       "poolTechnology": "Separate technical space needed on-deck or on land",
-      "basePriceRange": "from €85,000 ex-works (indicative — 3-module smallest config)",
-      "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
+      "basePriceRange": "from €85,000 ex-works (indicative  - 3-module smallest config)",
+      "variableFeesNote": "Transport, installation, local supervision, localization, permits - quoted separately as % of product fee"
     },
     {
       "id": "hybrid-pool",
       "name": "Bluet® Hybrid Pool",
       "category": "pool",
       "poolFamily": "Heated Pools",
-      "description": "Cost-effective heated pool. Combines Grated and Barge pool designs. Polypropylene construction — rustproof, corrosion-free, acid-resistant. Suitable for both fresh and saltwater. Fits in a standard shipping container.",
+      "description": "Cost-effective heated pool. Combines Grated and Barge pool designs. Polypropylene construction - rustproof, corrosion-free, acid-resistant. Suitable for both fresh and saltwater. Fits in a standard shipping container.",
       "bestFor": ["seasonal use", "mild climates", "budget-conscious projects", "saltwater locations", "sites with transport constraints"],
       "siteRequirements": {
         "minSiteDepthMeters": 2.0,
-        "note": "Estimated — confirm with Bluet. Pool structure supported by surrounding pontoons."
+        "note": "Estimated - confirm with Bluet. Pool structure supported by surrounding pontoons."
       },
       "dimensions": {
         "poolDepths": "1.35–3.0 m (4 standard depths)",
@@ -206,8 +206,8 @@
         "Insulated walls (note: less effective insulation than Barge Pool)"
       ],
       "poolTechnology": "Pool technology module delivered in container, assembled on separate platform or on shore",
-      "basePriceRange": "from €95,000 ex-works (indicative — cost-effective vs. Barge Pool)",
-      "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
+      "basePriceRange": "from €95,000 ex-works (indicative - cost-effective vs. Barge Pool)",
+      "variableFeesNote": "Transport, installation, local supervision, localization, permits - quoted separately as % of product fee"
     },
     {
       "id": "grated-pool",
@@ -230,23 +230,23 @@
         "Glass-fibre reinforced plastic mesh grid bottom and sides",
         "Year-round use with de-icer pumps in winter",
         "Optional filtration system if natural water quality is poor",
-        "Can be built above water — no heavy lifting equipment required",
+        "Can be built above water, no heavy lifting equipment required",
         "Concrete pontoons surround the pool with deck cover"
       ],
       "waterQuality": "Water quality analysis recommended. Optional filtration if surrounding water is poor.",
-      "basePriceRange": "from €70,000 ex-works (indicative — natural water, smaller structure)",
-      "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
+      "basePriceRange": "from €70,000 ex-works (indicative - natural water, smaller structure)",
+      "variableFeesNote": "Transport, installation, local supervision, localization, permits - quoted separately as % of product fee"
     },
     {
       "id": "bottomless-pool",
       "name": "Bluet® Bottomless Pool",
       "category": "pool",
       "poolFamily": "Natural Water Pools",
-      "description": "Open-bottom pool formed by surrounding platform modules. The simplest and most authentic natural water swimming experience. No filtering — requires pure surrounding water.",
+      "description": "Open-bottom pool formed by surrounding platform modules. The simplest and most authentic natural water swimming experience. No filtering  - requires pure surrounding water.",
       "bestFor": ["pristine lake or sea swimming", "natural holiday resorts", "sites with certified clean water", "eco-sensitive locations"],
       "siteRequirements": {
         "minSiteDepthMeters": 2.0,
-        "waterQuality": "Surrounding water must be pure enough for swimming — no filtering option available",
+        "waterQuality": "Surrounding water must be pure enough for swimming  - no filtering option available",
         "location": "Sheltered site required"
       },
       "features": [
@@ -256,8 +256,8 @@
         "No filter system needed (or available)"
       ],
       "waterQualityWarning": "NOT suitable if surrounding water quality is poor. Use Grated Pool with filtration instead.",
-      "basePriceRange": "from €40,000 ex-works (indicative — simplest natural water option)",
-      "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
+      "basePriceRange": "from €40,000 ex-works (indicative  - simplest natural water option)",
+      "variableFeesNote": "Transport, installation, local supervision, localization, permits  - quoted separately as % of product fee"
     },
     {
       "id": "heated-pool-general",
@@ -269,21 +269,21 @@
       "poolTechnologyOptions": [
         {
           "type": "Sand Filtration",
-          "use": "Standard — lower investment, easy maintenance (sand change every 5–7 years)"
+          "use": "Standard  - lower investment, easy maintenance (sand change every 5–7 years)"
         },
         {
           "type": "Ultrafiltration",
-          "use": "Heavy commercial use — most pure water quality, higher cost"
+          "use": "Heavy commercial use  - most pure water quality, higher cost"
         },
         {
           "type": "Biofiltering",
-          "use": "Eco-premium — no chemicals, natural water color, heats up to 32°C, lower operating costs"
+          "use": "Eco-premium  - no chemicals, natural water color, heats up to 32°C, lower operating costs"
         }
       ],
       "defaultTemperature": "27°C (adjustable to thermal spa temperatures)",
       "note": "Use Barge Pool for large/demanding sites, Hybrid Pool for cost-effective or saltwater sites, Multiuse Pool for shallow/flexible use.",
       "basePriceRange": "from €85,000–195,000 ex-works depending on type (see specific pool products)",
-      "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
+      "variableFeesNote": "Transport, installation, local supervision, localization, permits  - quoted separately as % of product fee"
     },
     {
       "id": "customized-pool",
@@ -293,10 +293,10 @@
       "description": "Fully bespoke design for unique project needs. Not limited to standard modular structures. Can combine standard and tailored solutions.",
       "examplesBuilt": ["floating seal pools (zoo)", "floating aquariums", "large swimming arenas", "thermal spa pools", "floating animal pools"],
       "siteRequirements": {
-        "note": "Project-specific — assessed case by case"
+        "note": "Project-specific  - assessed case by case"
       },
-      "basePriceRange": "TBC — project-specific quote only",
-      "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
+      "basePriceRange": "TBC  - project-specific quote only",
+      "variableFeesNote": "Transport, installation, local supervision, localization, permits  - quoted separately as % of product fee"
     }
   ],
 
@@ -319,8 +319,8 @@
       "id": "seaflex",
       "name": "Seaflex",
       "bestFor": "Specific site conditions where chain or pile is unsuitable",
-      "notes": "Elastic mooring system — allows movement with water level variation.",
-      "conditions": "variable — site-specific"
+      "notes": "Elastic mooring system - allows movement with water level variation.",
+      "conditions": "variable - site-specific"
     },
     {
       "id": "bluet-mooring-arm",
@@ -332,8 +332,8 @@
     {
       "id": "spudleg",
       "name": "Spudleg System",
-      "bestFor": "Multiuse Platform only — temporary anchoring",
-      "notes": "Only for Multiuse Platform. Temporary — does NOT increase load-bearing capacity. Requires water depth 1–5 m.",
+      "bestFor": "Multiuse Platform only - temporary anchoring",
+      "notes": "Only for Multiuse Platform. Temporary - does NOT increase load-bearing capacity. Requires water depth 1–5 m.",
       "conditions": "sheltered, water depth 1–5 m"
     }
   ],

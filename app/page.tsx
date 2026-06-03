@@ -52,8 +52,8 @@ export default function Home() {
       <header className="flex items-center justify-between px-5 py-3 bg-slate-900 border-b border-slate-800 shrink-0 z-10">
         <div className="flex items-center gap-3">
           {/* Logo mark */}
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-            B
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xl pb-2">
+            🌊
           </div>
           <div>
             <h1 className="text-white font-semibold text-sm leading-none">

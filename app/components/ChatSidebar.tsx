@@ -2,6 +2,9 @@
 
 import { useChat } from "ai/react";
 import { useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { AssessmentCard, isAssessmentContent } from "./AssessmentCard";
 
 interface SelectedLocation {
   lat: number;
@@ -66,7 +69,7 @@ function buildAnalysisPrompt(
   };
 
   const poolLabels: Record<PoolType, string> = {
-    natural: "Natural water pool (lake/sea swimming — bottomless or grated)",
+    natural: "Natural water pool (lake/sea swimming: bottomless or grated)",
     heated: "Heated pool (Barge, Hybrid, or Multiuse type)",
     both: "Both heated and natural water pool",
   };
@@ -88,11 +91,11 @@ function buildAnalysisPrompt(
 
   const depthNote = data.waterDepth.trim()
     ? data.waterDepth.trim()
-    : "Unknown — not provided by client. Apply the 2.0 m minimum threshold and flag for on-site confirmation.";
+    : "Unknown: not provided by client. Apply the 2.0 m minimum threshold and flag for on-site confirmation.";
 
   const waveNote = data.waveHeight.trim()
     ? data.waveHeight.trim()
-    : "Not provided — fetch from weather API and use that value.";
+    : "Not provided: fetch from weather API and use that value.";
 
   return [
     `Please analyze this location for a Bluet floating construction project.`,
@@ -163,6 +166,7 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
   const [wizard, setWizard] = useState<WizardData>(EMPTY_WIZARD);
   const [firstMessageId, setFirstMessageId] = useState<string | null>(null);
   const [isPdfGenerating, setIsPdfGenerating] = useState(false);
+  const [proposalSentAt, setProposalSentAt] = useState<number | null>(null);
 
   const {
     messages,
@@ -181,6 +185,7 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
     setWizard(EMPTY_WIZARD);
     setMessages([]);
     setFirstMessageId(null);
+    setProposalSentAt(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedLocation]);
 
@@ -190,7 +195,7 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
 
   function handleProjectType(type: ProjectType) {
     if (type === "residential") {
-      // Residential has no meaningful step 2 — jump straight to site data
+      // Residential has no meaningful step 2 - jump straight to site data
       setWizard({
         ...EMPTY_WIZARD,
         projectType: type,
@@ -215,10 +220,11 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
   }
 
   function handleGenerateProposal() {
+    setProposalSentAt(messages.length);
     append({
       role: "user",
       content:
-        "Using the site assessment above, generate a CLIENT-FACING Preliminary Project Proposal — a document Maritime AI Estimator would send to the client contact, NOT an internal tool output. Use professional, positive language. Structure:\n\n1. EXECUTIVE SUMMARY (2–3 sentences: what we propose and why this site works)\n2. PROPOSED SOLUTION (product names, key benefits in client-friendly terms — no internal notes or threshold jargon)\n3. INDICATIVE INVESTMENT (product fee starting from + variable fees range; present it as an investment, not a cost breakdown)\n4. PROJECT TIMELINE (5-stage: Concept Design → Permit Applications → Manufacturing → Delivery & Installation → Handover; give typical durations)\n5. PERMIT REQUIREMENTS (simplified 2–3 sentences for a non-technical client — no ELY/AVI acronyms unexplained)\n6. NEXT STEPS (3 concrete actions the client and Maritime AI Estimator take together)\n\nClose with a single call-to-action sentence. Keep to ~250 words total. Do NOT repeat the internal assessment format.",
+        "Using the site assessment above, generate a CLIENT-FACING Preliminary Project Proposal: a document Bluet would send to the client contact, NOT an internal tool output. Use professional, positive language and **markdown formatting** (## for section headers, **bold** for product names and key numbers, - for bullet lists).\n\nStructure:\n## Executive Summary\n2-3 sentences: what we propose and why this site works.\n\n## Proposed Solution\nProduct names with **bold**, key benefits in client-friendly terms; no internal notes or threshold jargon.\n\n## Indicative Investment\nProduct fee starting from + variable fees range; present as an investment, not a cost breakdown.\n\n## Project Timeline\n5 stages with typical durations: Concept Design, Permit Applications, Manufacturing, Delivery and Installation, Handover.\n\n## Permit Requirements\n2-3 sentences for a non-technical client; explain any authority names in plain language.\n\n## Next Steps\n3 concrete actions the client and Bluet take together.\n\nClose with a single call-to-action sentence. Keep to ~250 words total.",
     });
   }
 
@@ -259,7 +265,10 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
       let y = 53;
 
       const aiMessages = messages.filter(
-        (m) => m.role === "assistant" && m.content.trim(),
+        (m, idx) =>
+          m.role === "assistant" &&
+          m.content.trim() &&
+          (proposalSentAt === null || idx < proposalSentAt),
       );
 
       aiMessages.forEach((msg, idx) => {
@@ -292,7 +301,7 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
         doc.setFont("helvetica", "normal");
         doc.setTextColor(140);
         doc.text(
-          "Maritime AI Estimator  ·  For internal sales use only  ·  Indicative — not a binding offer",
+          "MARITIME AI ESTIMATOR  ·  For internal sales use only  ·  Indicative, not a binding offer",
           margin,
           291,
         );
@@ -340,11 +349,11 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
             "Click the map to analyze a coastal location"}
           {wizardStep === "confirming" &&
             "Confirm the selected location to continue"}
-          {wizardStep === "step1" && "Step 1 of 3 — Select project type"}
-          {wizardStep === "step2" && "Step 2 of 3 — Project details"}
-          {wizardStep === "step3" && "Step 3 of 3 — Site information"}
+          {wizardStep === "step1" && "Step 1 of 3: Select project type"}
+          {wizardStep === "step2" && "Step 2 of 3: Project details"}
+          {wizardStep === "step3" && "Step 3 of 3: Site information"}
           {wizardStep === "chatting" &&
-            "Internal pre-sales assessment — Bluet sales team"}
+            "Internal pre-sales assessment - MARITIME AI ESTIMATOR"}
         </p>
       </div>
 
@@ -366,7 +375,7 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
               <p className="text-slate-600 text-xs leading-relaxed">
                 Click anywhere on the map to begin a site assessment. The AI
                 will analyze wave conditions, wind, ice risk, and recommend the
-                right Bluet solution.
+                right floating solution.
               </p>
             </div>
           )}
@@ -409,7 +418,7 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
             </div>
           )}
 
-          {/* STEP 1 — Project type */}
+          {/* STEP 1 of 3: Project type */}
           {wizardStep === "step1" && (
             <div className="space-y-3">
               <div className="mb-4">
@@ -480,7 +489,7 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
             </div>
           )}
 
-          {/* STEP 2 — Project details */}
+          {/* STEP 2 of 3: Project details */}
           {wizardStep === "step2" && (
             <div className="space-y-5">
               {/* Infrastructure */}
@@ -600,13 +609,13 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
                             value: "natural" as PoolType,
                             icon: "🌊",
                             label: "Natural water pool",
-                            desc: "Uses surrounding water — Grated or Bottomless. Site depth min. 2–3 m.",
+                            desc: "Uses surrounding water  - Grated or Bottomless. Site depth min. 2–3 m.",
                           },
                           {
                             value: "heated" as PoolType,
                             icon: "🌡️",
                             label: "Heated pool",
-                            desc: "Filtered + temperature-controlled — Barge, Hybrid or Multiuse. Site depth from 1.5 m.",
+                            desc: "Filtered + temperature-controlled  - Barge, Hybrid or Multiuse. Site depth from 1.5 m.",
                           },
                           {
                             value: "both" as PoolType,
@@ -689,7 +698,7 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
                       What type of event?
                     </h3>
                     <p className="text-slate-500 text-xs mb-3">
-                      Multiuse Platform suits all event types — site depth 1–10
+                      Multiuse Platform suits all event types - site depth 1–10
                       m
                     </p>
                     <div className="grid grid-cols-2 gap-2">
@@ -782,7 +791,7 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
             </div>
           )}
 
-          {/* STEP 3 — Site data */}
+          {/* STEP 3 of 3: Site data */}
           {wizardStep === "step3" && (
             <div className="space-y-4">
               <div className="mb-2">
@@ -800,7 +809,7 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
                 <label className="block text-xs font-medium text-slate-300 mb-1.5">
                   Water depth at site
                   <span className="ml-1.5 text-amber-400 font-normal">
-                    ⚠ Critical — min. 2.0 m required
+                    ⚠ Critical - min. 2.0 m required
                   </span>
                 </label>
                 <input
@@ -809,7 +818,7 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
                   onChange={(e) =>
                     setWizard((w) => ({ ...w, waterDepth: e.target.value }))
                   }
-                  placeholder="e.g. 4.5 m — or leave blank if unknown"
+                  placeholder="e.g. 4.5 m  - or leave blank if unknown"
                   className="w-full bg-slate-800 text-white placeholder-slate-600 rounded-xl px-3 py-2.5 text-sm border border-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
                 />
                 <p className="text-slate-600 text-[10px] mt-1.5">
@@ -833,7 +842,7 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
                   onChange={(e) =>
                     setWizard((w) => ({ ...w, waveHeight: e.target.value }))
                   }
-                  placeholder="Leave blank — AI fetches from weather API"
+                  placeholder="Leave blank  - AI fetches from weather API"
                   className="w-full bg-slate-800 text-white placeholder-slate-600 rounded-xl px-3 py-2.5 text-sm border border-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
                 />
                 <p className="text-slate-600 text-[10px] mt-1.5">
@@ -890,7 +899,7 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
       {/* ── CHAT PHASE ────────────────────────────────────────── */}
       {wizardStep === "chatting" && (
         <>
-          {/* Context chip — shows what was analyzed */}
+          {/* Context chip  - shows what was analyzed */}
           {analysisLabel && selectedLocation && (
             <div className="px-4 py-2 bg-slate-900/60 border-b border-slate-800 shrink-0">
               <div className="flex items-center gap-2 text-xs text-slate-400">
@@ -942,16 +951,38 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
                     ) : (
                       <>
                         {!isUser &&
-                          message.toolInvocations &&
-                          message.toolInvocations.length > 0 && (
+                          message.toolInvocations?.some(
+                            (t) => t.state !== "result",
+                          ) && (
                             <div className="flex items-center gap-2 text-blue-400 text-xs mb-2 pb-2 border-b border-slate-700">
                               <div className="w-3 h-3 border border-blue-400 border-t-transparent rounded-full animate-spin" />
                               Fetching marine conditions...
                             </div>
                           )}
-                        <div className="whitespace-pre-wrap">
-                          {message.content}
-                        </div>
+                        {!isUser && message.content ? (
+                          isAssessmentContent(message.content) ? (
+                            <AssessmentCard content={message.content} />
+                          ) : (
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              components={{
+                                h1: ({ children }) => <h1 className="text-sm font-bold text-white mb-2 mt-1">{children}</h1>,
+                                h2: ({ children }) => <h2 className="text-xs font-bold text-slate-100 mt-3 mb-1.5 border-b border-slate-700 pb-1">{children}</h2>,
+                                h3: ({ children }) => <h3 className="text-xs font-semibold text-slate-200 mt-2 mb-1">{children}</h3>,
+                                p: ({ children }) => <p className="text-xs text-slate-200 mb-2 leading-relaxed last:mb-0">{children}</p>,
+                                strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
+                                ul: ({ children }) => <ul className="space-y-1 mb-2 ml-3">{children}</ul>,
+                                ol: ({ children }) => <ol className="space-y-1 mb-2 ml-3 list-decimal">{children}</ol>,
+                                li: ({ children }) => <li className="text-xs text-slate-200 leading-relaxed">{children}</li>,
+                                hr: () => <hr className="border-slate-700 my-2" />,
+                              }}
+                            >
+                              {message.content}
+                            </ReactMarkdown>
+                          )
+                        ) : isUser ? (
+                          <div className="whitespace-pre-wrap">{message.content}</div>
+                        ) : null}
                       </>
                     )}
                   </div>
@@ -984,10 +1015,17 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
             <div className="px-4 py-2 border-t border-slate-800 bg-slate-900/50 shrink-0 space-y-2">
               <button
                 onClick={handleGenerateProposal}
-                className="w-full bg-emerald-700 hover:bg-emerald-600 text-white py-2.5 px-4 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                disabled={proposalSentAt !== null}
+                className={`w-full py-2.5 px-4 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                  proposalSentAt !== null
+                    ? "bg-slate-800 text-slate-500 cursor-not-allowed"
+                    : "bg-emerald-700 hover:bg-emerald-600 text-white"
+                }`}
               >
-                <span>📄</span>
-                Generate Preliminary Proposal
+                <span>{proposalSentAt !== null ? "✓" : "📄"}</span>
+                {proposalSentAt !== null
+                  ? "Proposal Generated"
+                  : "Generate Preliminary Proposal"}
               </button>
               <button
                 onClick={handleDownloadSummary}
