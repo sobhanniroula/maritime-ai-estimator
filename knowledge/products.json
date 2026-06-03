@@ -1,81 +1,367 @@
-[
-  {
-    "id": "bluet-ecolight",
-    "name": "Bluet EcoLight Floating Platform",
-    "category": "Residential / Light Commercial",
-    "intendedUse": "Private saunas, swimming platforms, small docks, residential leisure",
-    "description": "A lightweight, modular floating platform made from recycled HDPE. Designed for protected coastal areas, archipelago bays, and calm inland waters.",
-    "constraints": {
-      "maxWaveHeightMeters": 0.6,
-      "maxWindSpeedKph": 25,
-      "minWaterDepthMeters": 1.5,
-      "iceResistance": "Low: must be removed or stored ashore for winter (October–April in Finland)"
-    },
-    "dimensions": {
-      "standardModule": "3m x 3m or 5m x 5m tiles",
-      "maxRecommendedConfiguration": "15m x 8m"
-    },
-    "basePriceRange": "€15,000 - €30,000",
-    "typicalInstallationWeeks": 1,
-    "features": [
-      "100% recycled HDPE floats",
-      "Tool-free modular assembly",
-      "UV-resistant non-slip deck",
-      "Eco-certified materials",
-      "Lightweight for easy seasonal storage"
+{
+  "meta": {
+    "lastUpdated": "2026-06-03",
+    "source": "Bluet official product brochures and technical PDFs",
+    "pricingStatus": "PLACEHOLDER — confirm real 'starting from' prices with Bluet at June 4 workshop",
+    "note": "Site depth minimums are for LLW (Lowest Low Water). Add local tidal/water level variation on top."
+  },
+
+  "siteThresholds": {
+    "minWaterDepthMeters": 2.0,
+    "maxSignificantWaveHeightMeters": 0.3,
+    "landConnectionRequired": true,
+    "notes": [
+      "Water depth below 2.0 m → site unsuitable for any Bluet product",
+      "Wave height above 0.3 m → breakwater required before installation",
+      "Land connection (electricity, water, sewage) is always mandatory",
+      "Floating foundations cannot be assembled when ice is present on site (Finnish installation window: ~May–November)"
     ]
   },
-  {
-    "id": "bluet-hd-commercial",
-    "name": "Bluet HD Commercial Pontoon",
-    "category": "Commercial",
-    "intendedUse": "Floating pools, commercial saunas, waterfront restaurants, event terraces, small hotels",
-    "description": "A heavy-duty galvanized steel pontoon system for commercial-grade floating structures in moderate open-water conditions. Suitable for Finnish archipelago and protected coastal bays.",
-    "constraints": {
-      "maxWaveHeightMeters": 1.5,
-      "maxWindSpeedKph": 50,
-      "minWaterDepthMeters": 2.5,
-      "iceResistance": "Moderate: seasonal dismantling recommended; can withstand light ice (<10cm) with protective mooring"
+
+  "foundations": [
+    {
+      "id": "lightweight-foundation",
+      "name": "Bluet® Lightweight Foundation",
+      "category": "foundation",
+      "bestFor": ["floating saunas", "terraces", "walkways", "small cafes", "sunbathing decks", "temporary sales facilities", "SaunaBoat concept"],
+      "siteConditions": {
+        "waveCondition": "calm / sheltered",
+        "maxSignificantWaveHeightMeters": 0.3,
+        "minSiteDepthMeters": 2.0
+      },
+      "materials": ["plastic pontoons (HDPE)", "lightweight concrete pontoons"],
+      "pontoonShapes": ["rectangular", "tube-shaped", "tapered (narrowing to one end)"],
+      "notes": "Plastic pontoon interiors can be used as tanks. Good for small sites and low structural loads.",
+      "recommendedFor": "residential: NO — use Concrete instead. Terraces, walkways, saunas: YES.",
+      "basePriceRange": "TBC — ask Bluet June 4",
+      "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
     },
-    "dimensions": {
-      "standardModule": "10m x 10m base sections",
-      "maxRecommendedConfiguration": "50m x 30m"
+    {
+      "id": "concrete-foundation",
+      "name": "Bluet® Modular Concrete Foundation",
+      "category": "foundation",
+      "subtypes": [
+        {
+          "id": "concrete-standard",
+          "name": "Bluet® Concrete Foundation",
+          "use": "Standard: housing, accommodation, restaurants, commercial"
+        },
+        {
+          "id": "concrete-megapontoon",
+          "name": "Bluet® Concrete Megapontoon",
+          "use": "Large infrastructure: floating roads, bridges, parks, large area projects"
+        }
+      ],
+      "bestFor": ["housing", "residential buildings", "accommodation units", "restaurants", "hotels", "floating roads", "floating bridges", "floating parks"],
+      "siteConditions": {
+        "waveCondition": "moderate",
+        "maxSignificantWaveHeightMeters": 0.3,
+        "minSiteDepthMeters": 2.0
+      },
+      "keyAdvantages": [
+        "Designed for 50-year lifetime",
+        "Long-lasting, low-maintenance",
+        "Delivered with full MEP services (water, sewer, electricity)",
+        "Type-approved and tested reinforced concrete",
+        "High-quality EPS filling — unsubmersible, no areas below water level"
+      ],
+      "residentialNote": "STRONGLY RECOMMENDED for residential. Steel is explicitly NOT recommended for housing (steel requires drydock maintenance every 5–10 years).",
+      "basePriceRange": "TBC — ask Bluet June 4",
+      "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
     },
-    "basePriceRange": "€50,000 - €120,000",
-    "typicalInstallationWeeks": 3,
-    "features": [
-      "Hot-dip galvanized steel frame",
-      "Custom superstructure support",
-      "Marina-grade anchoring system",
-      "Utility connections (water, electricity, waste)",
-      "CE-certified structural load ratings"
-    ]
-  },
-  {
-    "id": "bluet-arctic-industrial",
-    "name": "Bluet Arctic Heavy-Duty System",
-    "category": "Industrial / Large-Scale",
-    "intendedUse": "Floating hotels, marine research stations, large public pools, floating urban infrastructure, exposed coastal locations",
-    "description": "Bluet's most robust solution, engineered specifically for harsh Nordic marine environments. Uses a reinforced steel–concrete composite hull with integrated ice deflectors. Designed for year-round Baltic Sea operation.",
-    "constraints": {
-      "maxWaveHeightMeters": 2.5,
-      "maxWindSpeedKph": 80,
-      "minWaterDepthMeters": 4.0,
-      "iceResistance": "High: reinforced steel/concrete composite hull with active ice deflectors; rated for 30cm ice sheets"
+    {
+      "id": "steel-foundation",
+      "name": "Bluet® Steel Foundation",
+      "category": "foundation",
+      "bestFor": ["large special projects", "aquariums", "underwater restaurants", "exhibition spaces", "large floating pools", "projects needing underwater technical space"],
+      "siteConditions": {
+        "waveCondition": "demanding / harsh",
+        "notes": "Can handle more extreme conditions than Lightweight or Concrete"
+      },
+      "keyAdvantages": [
+        "Highest load capacity",
+        "Challenging shapes possible (e.g. curved, irregular)",
+        "Hollow barge spaces usable as technical rooms, storage, staff units",
+        "Modular or single-unit structure"
+      ],
+      "residentialNote": "NOT recommended for residential. Requires drydock maintenance every 5–10 years.",
+      "basePriceRange": "TBC — ask Bluet June 4",
+      "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
     },
-    "dimensions": {
-      "standardModule": "Custom engineering per project",
-      "maxRecommendedConfiguration": "100m+ custom configurations"
+    {
+      "id": "multiuse-platform",
+      "name": "Bluet® Multiuse Platform",
+      "category": "foundation",
+      "bestFor": ["concerts", "performing arts", "market events", "dance events", "exhibitions", "fashion shows", "product launches", "sports fields (padel, football)", "floating bridges", "temporary docks", "working platforms"],
+      "siteConditions": {
+        "waveCondition": "sheltered only",
+        "maxSignificantWaveHeightMeters": 0.3,
+        "minSiteDepthMeters": 1.0,
+        "maxSiteDepthMeters": 10.0,
+        "maxOpenWaterFetchMeters": 100,
+        "notes": "NOT suitable for locations with open water fetch over 100 m or strong water flow/drag"
+      },
+      "technicalSpecs": {
+        "moduleSize": "6.6 m × 3.3 m × 0.75 m",
+        "moduleWeight": "~3,200 kg",
+        "maxRigidPlatformSize": "~20 m × 20 m (movement joint required above this)",
+        "pointLoadMax": "2,000 kg/m²",
+        "continuousLoadPerModule": "8,000 kg"
+      },
+      "sizeCombinations": [
+        { "name": "Small", "dimensions": "6.6 × 9.9 m", "modules": 3, "stageSize": "8 × 6 m" },
+        { "name": "Medium", "dimensions": "13.2 × 13.2 m", "modules": 8, "stageSize": "10 × 8 m" },
+        { "name": "Large", "dimensions": "16.5 × 13.2 m", "modules": 10, "stageSize": "10 × 8 m + backstage" }
+      ],
+      "anchoringOptions": ["ropes to existing structures", "concrete sinkers", "spudleg system (water depth 1–5 m only)"],
+      "assembly": "1–2 days on-site. Transportable by land (truck) or water (towing). No heavy lifting equipment needed.",
+      "basePriceRange": "TBC — ask Bluet June 4",
+      "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
+    }
+  ],
+
+  "pools": [
+    {
+      "id": "barge-pool",
+      "name": "Bluet® Barge Pool",
+      "category": "pool",
+      "poolFamily": "Heated Pools",
+      "description": "Steel barge construction. Highest durability and strength. Ideal for large, prestigious projects. Withstands harsh conditions and ice.",
+      "bestFor": ["luxury hotels", "competition swimming", "spa complexes", "large commercial pools", "projects needing underwater technical space"],
+      "siteRequirements": {
+        "minSiteDepthMeters": 3.0,
+        "note": "3.0 m + water level variation (tidal/seasonal swing from normal to lowest low water)"
+      },
+      "dimensions": {
+        "poolDepths": ["1.35 m (standard)", "1.65 m (standard)", "custom available"],
+        "widths": ["7.5 m", "10 m", "12.5 m", "15 m"],
+        "lengths": "10–50 m",
+        "smallestConfiguration": "75 m² pool, 91 m² with deck (3 modules)",
+        "competitionSizes": ["25 m (FINA spec)", "50 m Olympic (FINA spec)"]
+      },
+      "features": [
+        "Infinity edge option",
+        "Underwater technical space inside barge",
+        "Space for pool cover (motorized remote-control cover)",
+        "Suitable for harsh wave and ice conditions",
+        "Stainless steel overflow gutters"
+      ],
+      "poolTechnology": "Factory-made container installed under deck, inside barge, on-deck, or in separate technical space on land",
+      "basePriceRange": "TBC — ask Bluet June 4",
+      "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
     },
-    "basePriceRange": "€150,000 - €500,000+",
-    "typicalInstallationWeeks": 12,
-    "features": [
-      "Ice-resistant reinforced hull",
-      "Permanent year-round mooring",
-      "Full utility integration (heating, water, power, sewage)",
-      "Winter operation certified",
-      "Custom architectural superstructure",
-      "Environmental impact assessment included"
+    {
+      "id": "multiuse-pool",
+      "name": "Bluet® Multiuse Pool",
+      "category": "pool",
+      "poolFamily": "Heated Pools",
+      "description": "Versatile stainless-steel or coated modular pool. Works for children's wading pools up to trendy spa and nightclub pools. Assembled on water — no large land construction site needed. Can also be installed on land.",
+      "bestFor": ["children's pools", "swimming schools", "spa pools", "hotel leisure pools", "nightclub/entertainment pools", "multi-purpose waterfront facilities"],
+      "siteRequirements": {
+        "minSiteDepthMeters": 1.5,
+        "note": "1.5 m + water level variation. Can also be installed on land."
+      },
+      "dimensions": {
+        "poolDepths": "0.22–0.90 m adjustable (sloped mid module)",
+        "widths": "2.7–13.9 m",
+        "lengths": "6.1–20 m",
+        "deckWidth": "2.4 m minimum on all sides",
+        "smallestCombination": "8 × 13.6 m total (incl. deck), 3 modules",
+        "largestCombination": "19.2 × 24.8 m total, 7 modules"
+      },
+      "features": [
+        "Modular: scales from children's pool to large leisure pool",
+        "Assembled on water — no heavy lifting equipment",
+        "Land installation also possible",
+        "Wide accessory range: underwater benches, RGB lights, massage showers",
+        "Motorized pool cover included"
+      ],
+      "poolTechnology": "Separate technical space needed on-deck or on land",
+      "basePriceRange": "TBC — ask Bluet June 4",
+      "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
+    },
+    {
+      "id": "hybrid-pool",
+      "name": "Bluet® Hybrid Pool",
+      "category": "pool",
+      "poolFamily": "Heated Pools",
+      "description": "Cost-effective heated pool. Combines Grated and Barge pool designs. Polypropylene construction — rustproof, corrosion-free, acid-resistant. Suitable for both fresh and saltwater. Fits in a standard shipping container.",
+      "bestFor": ["seasonal use", "mild climates", "budget-conscious projects", "saltwater locations", "sites with transport constraints"],
+      "siteRequirements": {
+        "minSiteDepthMeters": 2.0,
+        "note": "Estimated — confirm with Bluet. Pool structure supported by surrounding pontoons."
+      },
+      "dimensions": {
+        "poolDepths": "1.35–3.0 m (4 standard depths)",
+        "lengths": "5–50 m",
+        "deckWidth": "2.4 m on all sides",
+        "transportation": "Optimized to fit in standard shipping container"
+      },
+      "materials": "Polypropylene cellular boards (walls and bottom) + acid-proof steel beam frame",
+      "features": [
+        "Rustproof, corrosion-free, acid-resistant",
+        "Suitable for fresh AND saltwater",
+        "Can be assembled on water or on land",
+        "Cost-effective vs. Barge Pool",
+        "Insulated walls (note: less effective insulation than Barge Pool)"
+      ],
+      "poolTechnology": "Pool technology module delivered in container, assembled on separate platform or on shore",
+      "basePriceRange": "TBC — ask Bluet June 4 (positioned as more affordable than Barge Pool)",
+      "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
+    },
+    {
+      "id": "grated-pool",
+      "name": "Bluet® Grated Pool",
+      "category": "pool",
+      "poolFamily": "Natural Water Pools",
+      "description": "Natural water pool with a rigid glass-fibre mesh bottom and sides. Safe swimming without worries about aquatic life or unpleasant seabed. Optional filtration system for poor water quality. Year-round use possible with de-icer pumps.",
+      "bestFor": ["sea/lake natural swimming", "sites with moderate water quality", "year-round outdoor swimming", "dive pools (custom depth)", "public swimming areas"],
+      "siteRequirements": {
+        "minSiteDepthMeters": 2.0,
+        "maxSiteDepthMeters": 3.0,
+        "note": "2–3 m + water level variation (tidal/seasonal swing)"
+      },
+      "dimensions": {
+        "poolDepths": ["1.2 m", "1.35 m", "1.6 m", "4–5 m dive pool (custom)"],
+        "lengths": "10.7–25.7 m",
+        "moduleSize": "2.14 × 2.14 m modules with same-sized deck"
+      },
+      "features": [
+        "Glass-fibre reinforced plastic mesh grid bottom and sides",
+        "Year-round use with de-icer pumps in winter",
+        "Optional filtration system if natural water quality is poor",
+        "Can be built above water — no heavy lifting equipment required",
+        "Concrete pontoons surround the pool with deck cover"
+      ],
+      "waterQuality": "Water quality analysis recommended. Optional filtration if surrounding water is poor.",
+      "basePriceRange": "TBC — ask Bluet June 4",
+      "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
+    },
+    {
+      "id": "bottomless-pool",
+      "name": "Bluet® Bottomless Pool",
+      "category": "pool",
+      "poolFamily": "Natural Water Pools",
+      "description": "Open-bottom pool formed by surrounding platform modules. The simplest and most authentic natural water swimming experience. No filtering — requires pure surrounding water.",
+      "bestFor": ["pristine lake or sea swimming", "natural holiday resorts", "sites with certified clean water", "eco-sensitive locations"],
+      "siteRequirements": {
+        "minSiteDepthMeters": 2.0,
+        "waterQuality": "Surrounding water must be pure enough for swimming — no filtering option available",
+        "location": "Sheltered site required"
+      },
+      "features": [
+        "Underwater safety nets always included",
+        "Wide selection of deck accessories",
+        "Can be located in sea, river, or lake",
+        "No filter system needed (or available)"
+      ],
+      "waterQualityWarning": "NOT suitable if surrounding water quality is poor. Use Grated Pool with filtration instead.",
+      "basePriceRange": "TBC — ask Bluet June 4",
+      "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
+    },
+    {
+      "id": "heated-pool-general",
+      "name": "Bluet® Heated Pool (General)",
+      "category": "pool",
+      "poolFamily": "Heated Pools",
+      "description": "When the customer wants a heated, filtered pool but hasn't chosen between Barge, Hybrid, or Multiuse variants. Default temperature 27°C, adjustable to thermal spa temperatures. Sizes up to Olympic 50 m.",
+      "bestFor": ["year-round commercial use", "hotels and spas", "sports and competition", "northern climates"],
+      "poolTechnologyOptions": [
+        {
+          "type": "Sand Filtration",
+          "use": "Standard — lower investment, easy maintenance (sand change every 5–7 years)"
+        },
+        {
+          "type": "Ultrafiltration",
+          "use": "Heavy commercial use — most pure water quality, higher cost"
+        },
+        {
+          "type": "Biofiltering",
+          "use": "Eco-premium — no chemicals, natural water color, heats up to 32°C, lower operating costs"
+        }
+      ],
+      "defaultTemperature": "27°C (adjustable to thermal spa temperatures)",
+      "note": "Use Barge Pool for large/demanding sites, Hybrid Pool for cost-effective or saltwater sites, Multiuse Pool for shallow/flexible use.",
+      "basePriceRange": "TBC — ask Bluet June 4",
+      "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
+    },
+    {
+      "id": "customized-pool",
+      "name": "Bluet® Customized Pool Solution",
+      "category": "pool",
+      "poolFamily": "Customized Pools",
+      "description": "Fully bespoke design for unique project needs. Not limited to standard modular structures. Can combine standard and tailored solutions.",
+      "examplesBuilt": ["floating seal pools (zoo)", "floating aquariums", "large swimming arenas", "thermal spa pools", "floating animal pools"],
+      "siteRequirements": {
+        "note": "Project-specific — assessed case by case"
+      },
+      "basePriceRange": "TBC — project-specific quote only",
+      "variableFeesNote": "Transport, installation, local supervision, localization, permits — quoted separately as % of product fee"
+    }
+  ],
+
+  "anchoringOptions": [
+    {
+      "id": "chain-anchoring",
+      "name": "Chain Anchoring",
+      "bestFor": "Standard conditions",
+      "notes": "Easier to install, more affordable. Common choice for most projects.",
+      "conditions": "calm to moderate"
+    },
+    {
+      "id": "pile-anchoring",
+      "name": "Pile Anchoring",
+      "bestFor": "Demanding or exposed conditions",
+      "notes": "Higher initial cost. Sometimes mandatory depending on site conditions and local regulations.",
+      "conditions": "moderate to demanding"
+    },
+    {
+      "id": "seaflex",
+      "name": "Seaflex",
+      "bestFor": "Specific site conditions where chain or pile is unsuitable",
+      "notes": "Elastic mooring system — allows movement with water level variation.",
+      "conditions": "variable — site-specific"
+    },
+    {
+      "id": "bluet-mooring-arm",
+      "name": "Bluet® Mooring Arm",
+      "bestFor": "Deep water and wave-prone locations",
+      "notes": "Bluet's own product. Designed for sites where conventional anchoring is insufficient.",
+      "conditions": "deep water / wave-exposed"
+    },
+    {
+      "id": "spudleg",
+      "name": "Spudleg System",
+      "bestFor": "Multiuse Platform only — temporary anchoring",
+      "notes": "Only for Multiuse Platform. Temporary — does NOT increase load-bearing capacity. Requires water depth 1–5 m.",
+      "conditions": "sheltered, water depth 1–5 m"
+    }
+  ],
+
+  "permitsFinland": {
+    "note": "Always flag these in the AI output. Permit lead times vary 6–18 months depending on municipality.",
+    "required": [
+      {
+        "type": "Land use plan change",
+        "authority": "Municipality",
+        "when": "If site is not yet zoned for waterfront/floating construction"
+      },
+      {
+        "type": "Water permit",
+        "authority": "ELY-keskus / AVI (Finnish regional authorities)",
+        "when": "Always required for any floating structure affecting a waterway"
+      },
+      {
+        "type": "Building permit",
+        "authority": "Municipality",
+        "when": "For any structure with a superstructure (sauna, restaurant, housing etc.)",
+        "covers": "Fire safety, access routes, accessibility, structural loads"
+      },
+      {
+        "type": "Floating construction standards compliance",
+        "authority": "Building inspector",
+        "covers": "Snow load, weight distribution, freeboard and stability, ice/water level extreme conditions"
+      }
     ]
   }
-]
+}
