@@ -35,6 +35,7 @@ interface WizardData {
   usagePeriod: UsagePeriod | null;
   // Bathymetry / water depth
   waterDepth: string;
+  waterDepthIsEmodnet: boolean;
   waterLevelHW: string;
   waterLevelNW: string;
   tidalBehaviour: string;
@@ -63,6 +64,7 @@ const EMPTY_WIZARD: WizardData = {
   poolType: null,
   usagePeriod: null,
   waterDepth: "",
+  waterDepthIsEmodnet: false,
   waterLevelHW: "",
   waterLevelNW: "",
   tidalBehaviour: "",
@@ -131,7 +133,9 @@ function buildAnalysisPrompt(
     );
 
   const depthNote = data.waterDepth.trim()
-    ? data.waterDepth.trim()
+    ? data.waterDepthIsEmodnet
+      ? `${data.waterDepth.trim()} m (auto-fetched bathymetric estimate - confirm on site)`
+      : data.waterDepth.trim()
     : "Unknown: not provided by client. Apply the 2.0 m minimum threshold and flag for on-site confirmation.";
 
   const waveNote = data.waveHeight.trim()
@@ -293,6 +297,10 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
   const [copiedProposal, setCopiedProposal] = useState(false);
   const [sidebarView, setSidebarView] = useState<"chat" | "history">("chat");
   const [chatHistory, setChatHistory] = useState<ChatHistoryEntry[]>([]);
+  const [emodnetLoading, setEmodnetLoading] = useState(false);
+  const [emodnetError, setEmodnetError] = useState(false);
+  const [depthAutoSource, setDepthAutoSource] = useState("");
+  const emodnetFetchedRef = useRef(false);
 
   const {
     messages,
@@ -312,8 +320,36 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
     setMessages([]);
     setFirstMessageId(null);
     setProposalSentAt(null);
+    emodnetFetchedRef.current = false;
+    setEmodnetLoading(false);
+    setEmodnetError(false);
+    setDepthAutoSource("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedLocation]);
+
+  // Auto-fetch EMODnet depth when step 3 is entered and depth field is empty
+  useEffect(() => {
+    if (wizardStep !== "step3" || !selectedLocation || emodnetFetchedRef.current) return;
+    emodnetFetchedRef.current = true;
+    setEmodnetLoading(true);
+    setEmodnetError(false);
+
+    fetch(`/api/depth?lat=${selectedLocation.lat}&lng=${selectedLocation.lng}`)
+      .then((r) => r.json())
+      .then((data: { depthM?: number; dataSource?: string } | null) => {
+        if (data?.depthM != null) {
+          setDepthAutoSource(data.dataSource ?? "bathymetric database");
+          setWizard((w) => {
+            if (w.waterDepth.trim()) return w; // user already typed a value
+            return { ...w, waterDepth: String(data.depthM), waterDepthIsEmodnet: true };
+          });
+        } else {
+          setEmodnetError(true);
+        }
+      })
+      .catch(() => setEmodnetError(true))
+      .finally(() => setEmodnetLoading(false));
+  }, [wizardStep, selectedLocation]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -1352,15 +1388,46 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
                       ⚠ Critical - min. 2.0 m required
                     </span>
                   </label>
-                  <input
-                    type="text"
-                    value={wizard.waterDepth}
-                    onChange={(e) =>
-                      setWizard((w) => ({ ...w, waterDepth: e.target.value }))
-                    }
-                    placeholder="e.g. 4.5 m - or leave blank if unknown"
-                    className="w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 rounded-xl px-3 py-2.5 text-sm border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={wizard.waterDepth}
+                      onChange={(e) =>
+                        setWizard((w) => ({
+                          ...w,
+                          waterDepth: e.target.value,
+                          waterDepthIsEmodnet: false,
+                        }))
+                      }
+                      placeholder={
+                        emodnetLoading
+                          ? "Querying EMODnet Bathymetry..."
+                          : "e.g. 4.5 m - or leave blank if unknown"
+                      }
+                      disabled={emodnetLoading}
+                      className="w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 rounded-xl px-3 py-2.5 text-sm border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-60"
+                    />
+                    {emodnetLoading && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <div className="w-3.5 h-3.5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    )}
+                  </div>
+                  {wizard.waterDepthIsEmodnet && !emodnetLoading && (
+                    <p className="text-blue-500 dark:text-blue-400 text-[10px] mt-1.5">
+                      Auto-fetched from {depthAutoSource || "bathymetric database"}. You can edit this value.
+                    </p>
+                  )}
+                  {emodnetError && !wizard.waterDepth.trim() && (
+                    <p className="text-slate-400 dark:text-slate-600 text-[10px] mt-1.5">
+                      Could not auto-fetch depth for this location. Enter manually or leave blank.
+                    </p>
+                  )}
+                  {!emodnetLoading && !wizard.waterDepthIsEmodnet && !emodnetError && (
+                    <p className="text-slate-400 dark:text-slate-600 text-[10px] mt-1.5">
+                      Depth cannot be auto-fetched for all locations. A client estimate or site survey value is preferred.
+                    </p>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
