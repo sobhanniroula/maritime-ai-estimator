@@ -19,7 +19,7 @@
  */
 
 import { createOpenAI } from "@ai-sdk/openai";
-import { streamText, tool } from "ai";
+import { streamText, tool, convertToModelMessages, stepCountIs } from "ai";
 import { z } from "zod";
 import fs from "fs";
 import path from "path";
@@ -35,8 +35,6 @@ export const maxDuration = 30;
 const githubModel = createOpenAI({
   baseURL: "https://models.inference.ai.azure.com",
   apiKey: process.env.GITHUB_TOKEN ?? "",
-  // "compatible" mode handles slight differences in the GitHub Models API
-  compatibility: "compatible",
 });
 
 export async function POST(req: Request) {
@@ -55,8 +53,8 @@ export async function POST(req: Request) {
   // streamText is the core function from the Vercel AI SDK
   // It sends the AI's response as a stream so the UI shows it in real time
   const result = streamText({
-    model: githubModel("gpt-4o-mini"),
-    messages,
+    model: githubModel.chat("gpt-4o-mini"),
+    messages: await convertToModelMessages(messages),
 
     system: `You are an internal pre-sales analysis tool for Bluet Oy's sales team.
 Your output is for the salesperson only, never shown directly to the customer.
@@ -142,7 +140,7 @@ NEXT STEPS
         description:
           "Fetches real-time marine weather data for a GPS location. Returns wave height, wind speed, ice risk, and water temperature. Always call this when you have coordinates to analyze.",
         // zod schema validates the inputs the AI passes to this function
-        parameters: z.object({
+        inputSchema: z.object({
           lat: z.number().describe("Latitude of the target location"),
           lng: z.number().describe("Longitude of the target location"),
         }),
@@ -153,12 +151,12 @@ NEXT STEPS
       }),
     },
 
-    // maxSteps: allows the AI to call tools and then continue responding
+    // stopWhen: allows the AI to call tools and then continue responding
     // Without this, it would stop after calling the tool
     // Flow: user message → AI calls tool → tool runs → AI reads result → AI writes response
-    maxSteps: 5,
+    stopWhen: stepCountIs(5),
   });
 
-  // Convert the stream to an HTTP response the browser's useChat hook understands
-  return result.toDataStreamResponse();
+  // Convert the stream to an HTTP response the browser's chat hook understands
+  return result.toUIMessageStreamResponse();
 }

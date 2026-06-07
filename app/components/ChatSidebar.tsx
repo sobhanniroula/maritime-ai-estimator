@@ -1,10 +1,94 @@
 "use client";
 
-import { useChat } from "ai/react";
-import { useEffect, useRef, useState } from "react";
+import {
+  AbstractChat,
+  DefaultChatTransport,
+  type UIMessage,
+  type ChatState,
+  type ChatStatus,
+  isToolUIPart,
+} from "ai";
+import { useEffect, useReducer, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { AssessmentCard, isAssessmentContent, parseAssessment } from "./AssessmentCard";
+
+function getMessageText(message: UIMessage): string {
+  return message.parts
+    .filter((p): p is { type: "text"; text: string } => p.type === "text")
+    .map((p) => p.text)
+    .join("");
+}
+
+class ReactChat extends AbstractChat<UIMessage> {}
+
+function useChat({ api }: { api: string }) {
+  const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
+  const [input, setInput] = useState("");
+  const stateRef = useRef<{
+    messages: UIMessage[];
+    status: ChatStatus;
+    error: Error | undefined;
+  }>({ messages: [], status: "ready", error: undefined });
+  const chatRef = useRef<ReactChat | null>(null);
+  const notifyRef = useRef(forceUpdate);
+  notifyRef.current = forceUpdate;
+
+  if (!chatRef.current) {
+    const notify = () => notifyRef.current();
+    const state: ChatState<UIMessage> = {
+      get status() { return stateRef.current.status; },
+      set status(v: ChatStatus) { stateRef.current.status = v; notify(); },
+      get error() { return stateRef.current.error; },
+      set error(v: Error | undefined) { stateRef.current.error = v; },
+      get messages() { return stateRef.current.messages; },
+      set messages(v: UIMessage[]) { stateRef.current.messages = v; notify(); },
+      pushMessage(m: UIMessage) { stateRef.current.messages = [...stateRef.current.messages, m]; notify(); },
+      popMessage() { stateRef.current.messages = stateRef.current.messages.slice(0, -1); notify(); },
+      replaceMessage(i: number, m: UIMessage) {
+        const msgs = [...stateRef.current.messages];
+        msgs[i] = m;
+        stateRef.current.messages = msgs;
+        notify();
+      },
+      snapshot: function<T>(t: T): T { return t; },
+    };
+    chatRef.current = new ReactChat({ transport: new DefaultChatTransport({ api }), state });
+  }
+
+  const messages = stateRef.current.messages;
+  const isLoading =
+    stateRef.current.status === "submitted" ||
+    stateRef.current.status === "streaming";
+
+  function handleInputChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) {
+    setInput(e.target.value);
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!input.trim()) return;
+    chatRef.current!.sendMessage({ text: input });
+    setInput("");
+  }
+
+  function append(message: { role: string; content: string }) {
+    const id = chatRef.current!.generateId();
+    chatRef.current!
+      .sendMessage({ id, role: message.role as "user", parts: [{ type: "text", text: message.content }] })
+      .catch(console.error);
+    return Promise.resolve(id);
+  }
+
+  function setMessages(newMessages: UIMessage[]) {
+    stateRef.current.messages = newMessages;
+    notifyRef.current();
+  }
+
+  return { messages, input, handleInputChange, handleSubmit, append, isLoading, setMessages };
+}
 
 interface SelectedLocation {
   lat: number;
@@ -368,11 +452,11 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
     const assessMsg = messages.find(
       (m, idx) =>
         m.role === "assistant" &&
-        m.content.trim() &&
+        getMessageText(m).trim() &&
         (proposalSentAt === null || idx < proposalSentAt),
     );
-    if (!assessMsg || !isAssessmentContent(assessMsg.content)) return;
-    const parsed = parseAssessment(assessMsg.content);
+    if (!assessMsg || !isAssessmentContent(getMessageText(assessMsg))) return;
+    const parsed = parseAssessment(getMessageText(assessMsg));
     const suitability = parsed.suitabilityStatus;
     if (!suitability) return;
     setChatHistory((prev) => {
@@ -417,10 +501,10 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
     if (proposalSentAt === null) return;
     const proposalMsg = messages
       .slice(proposalSentAt)
-      .find((m) => m.role === "assistant" && m.content.trim());
+      .find((m) => m.role === "assistant" && getMessageText(m).trim());
     if (!proposalMsg) return;
     try {
-      await navigator.clipboard.writeText(proposalMsg.content);
+      await navigator.clipboard.writeText(getMessageText(proposalMsg));
       setCopiedProposal(true);
       setTimeout(() => setCopiedProposal(false), 5000);
     } catch {}
@@ -551,7 +635,7 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
       const assessMsg = messages.find(
         (m, idx) =>
           m.role === "assistant" &&
-          m.content.trim() &&
+          getMessageText(m).trim() &&
           (proposalSentAt === null || idx < proposalSentAt),
       );
 
@@ -575,7 +659,7 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
       };
 
       if (assessMsg) {
-        const d = parseAssessment(assessMsg.content);
+        const d = parseAssessment(getMessageText(assessMsg));
 
         // Suitability badge
         if (d.suitabilityStatus) {
@@ -1800,17 +1884,17 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
                     ) : (
                       <>
                         {!isUser &&
-                          message.toolInvocations?.some(
-                            (t) => t.state !== "result",
+                          message.parts.some(
+                            (p) => isToolUIPart(p) && p.state !== "output-available" && p.state !== "output-error",
                           ) && (
                             <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-xs mb-2 pb-2 border-b border-slate-200 dark:border-slate-700">
                               <div className="w-3 h-3 border border-blue-500 dark:border-blue-400 border-t-transparent rounded-full animate-spin" />
                               Fetching marine conditions...
                             </div>
                           )}
-                        {!isUser && message.content ? (
-                          isAssessmentContent(message.content) ? (
-                            <AssessmentCard content={message.content} />
+                        {!isUser && getMessageText(message) ? (
+                          isAssessmentContent(getMessageText(message)) ? (
+                            <AssessmentCard content={getMessageText(message)} />
                           ) : (
                             <ReactMarkdown
                               remarkPlugins={[remarkGfm]}
@@ -1826,11 +1910,11 @@ export default function ChatSidebar({ selectedLocation }: ChatSidebarProps) {
                                 hr: () => <hr className="border-slate-200 dark:border-slate-700 my-2" />,
                               }}
                             >
-                              {message.content}
+                              {getMessageText(message)}
                             </ReactMarkdown>
                           )
                         ) : isUser ? (
-                          <div className="whitespace-pre-wrap">{message.content}</div>
+                          <div className="whitespace-pre-wrap">{getMessageText(message)}</div>
                         ) : null}
                       </>
                     )}
