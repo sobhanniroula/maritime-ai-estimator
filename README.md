@@ -108,19 +108,19 @@ This is what makes the output trustworthy: it's grounded in real data, not guess
 
 ## Tech Stack
 
-| Layer          | Technology                                          |
-| -------------- | --------------------------------------------------- |
-| Framework      | Next.js 15 (App Router)                             |
-| Language       | TypeScript                                          |
-| AI / Streaming | Vercel AI SDK v4                                    |
-| AI Model       | Google Gemini: `gemini-3.1-flash-lite` (free tier)  |
-| Map            | React-Leaflet + OpenStreetMap tiles                 |
-| Styling        | Tailwind CSS                                        |
-| Weather Data   | WeatherAPI.com (optional)                           |
+| Layer          | Technology                                         |
+| -------------- | -------------------------------------------------- |
+| Framework      | Next.js 15 (App Router)                            |
+| Language       | TypeScript                                         |
+| AI / Streaming | Vercel AI SDK v4                                   |
+| AI Model       | Google Gemini: `gemini-3.1-flash-lite` (free tier) |
+| Map            | React-Leaflet + OpenStreetMap tiles                |
+| Styling        | Tailwind CSS                                       |
+| Weather Data   | WeatherAPI.com (optional)                          |
 
 ---
 
-## Pitch Day Tips
+## Pitch Day Tips:
 
 - **`knowledge/products.json`** is designed to be edited live. During the morning workshop when the Bluet founders tell you their real constraints, update this file and the AI will immediately reflect those changes.
 - The AI fallback (no WeatherAPI key) uses accurate Baltic Sea seasonal averages, safe to demo offline.
