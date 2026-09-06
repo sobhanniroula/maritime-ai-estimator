@@ -19,29 +19,28 @@ Built for the **Vantaa Startup Deal Challenge** (pitch day: June 4, 2026).
 
 ## Getting Started
 
-### Step 1: Get a GitHub Personal Access Token (free, 2 minutes)
+### Step 1: Get a Google Gemini API key (free, 2 minutes)
 
-The AI runs on **GitHub Models** (included with your GitHub Copilot Pro subscription). You need a token to access it.
+The AI runs on **Google Gemini**'s free API tier (no credit card needed). This used to run on GitHub Models, but GitHub fully retired that service on July 30, 2026.
 
-1. Go to [github.com/settings/tokens](https://github.com/settings/tokens)
-2. Click **"Generate new token (classic)"**
-3. Give it any name (e.g. `maritime-ai-estimator`)
-4. Leave all permission checkboxes **unchecked**, no special scopes needed
-5. Click **"Generate token"** and copy the `ghp_...` value
+1. Go to [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
+2. Sign in with any Google account
+3. Click **"Create API key"**
+4. Copy the key
 
 ### Step 2: Create your environment file
 
 Create a file called `.env.local` in the project root folder (same level as `package.json`):
 
 ```
-# Required: GitHub token for AI access
-GITHUB_TOKEN=ghp_your_token_here
+# Required: Gemini API key for AI access
+GEMINI_API_KEY=your_gemini_key_here
 
 # Optional: for live marine weather data (app works without this)
 WEATHER_API_KEY=your_weatherapi_key_here
 ```
 
-> **Note:** `.env.local` is listed in `.gitignore` and will never be committed to GitHub. Your token stays private.
+> **Note:** `.env.local` is listed in `.gitignore` and will never be committed to GitHub. Your keys stay private.
 
 **Optional: Live weather data**
 
@@ -114,8 +113,8 @@ This is what makes the output trustworthy: it's grounded in real data, not guess
 | Framework      | Next.js 15 (App Router)                             |
 | Language       | TypeScript                                          |
 | AI / Streaming | Vercel AI SDK v4                                    |
-| AI Model       | GitHub Models: `gpt-5-mini` (free with Copilot Pro) |
-| Map            | React-Leaflet + CartoDB dark tiles                  |
+| AI Model       | Google Gemini: `gemini-3.6-flash` (free tier)       |
+| Map            | React-Leaflet + OpenStreetMap tiles                 |
 | Styling        | Tailwind CSS                                        |
 | Weather Data   | WeatherAPI.com (optional)                           |
 

@@ -52,10 +52,10 @@ interface LeafletMapComponentProps {
   theme: "dark" | "light";
 }
 
-const DARK_TILES =
-  "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
-const LIGHT_TILES =
-  "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+// OpenStreetMap's standard tiles: free, no API key ever required (unlike CARTO,
+// which now requires one). Dark mode is simulated with a CSS filter on
+// .leaflet-tile-pane (see globals.css) instead of a separate dark tile style.
+const OSM_TILES = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 
 export default function LeafletMapComponent({
   onLocationSelect,
@@ -82,8 +82,8 @@ export default function LeafletMapComponent({
       style={{ background: isDark ? "#1a2a3a" : "#e8ecf0" }}
     >
       <TileLayer
-        url={isDark ? DARK_TILES : LIGHT_TILES}
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        url={OSM_TILES}
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         maxZoom={19}
       />
 

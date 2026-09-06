@@ -18,7 +18,7 @@
  * This is what makes the response grounded in real data, not just hallucination.
  */
 
-import { createOpenAI } from "@ai-sdk/openai";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { streamText, tool, convertToModelMessages, stepCountIs } from "ai";
 import { z } from "zod";
 import fs from "fs";
@@ -26,15 +26,19 @@ import path from "path";
 import { getMarineConditions } from "@/tools/marineWeather";
 
 // Vercel Pro allows up to 300s. Set to 30: works on Pro, silently capped to 10 on Hobby.
-// gpt-4o-mini + one tool call typically completes in 4-8s, so Hobby is fine in practice.
+// gemini-3.6-flash + one tool call typically completes in 4-8s, so Hobby is fine in practice.
 export const maxDuration = 30;
 
-// Set up the AI model using GitHub Models
-// GitHub Models is accessed via your GitHub Personal Access Token
-// It supports the same API format as OpenAI, so we use the OpenAI SDK adapter
-const githubModel = createOpenAI({
-  baseURL: "https://models.inference.ai.azure.com",
-  apiKey: process.env.GITHUB_TOKEN ?? "",
+// Set up the AI model using the Google Gemini API.
+// (GitHub Models, which this used to run on, was fully retired by GitHub on
+// July 30, 2026 - it no longer works for anyone, regardless of token or plan.)
+// We use Gemini's own native provider here, not the OpenAI-compatible adapter:
+// that compat layer omits the "index" field on streaming tool_calls (a known
+// gap, since Gemini sends each tool call whole in one chunk instead of
+// streaming pieces of it like OpenAI does), which fails strict schema
+// validation and breaks any request that calls a tool.
+const google = createGoogleGenerativeAI({
+  apiKey: process.env.GEMINI_API_KEY ?? "",
 });
 
 export async function POST(req: Request) {
@@ -53,7 +57,16 @@ export async function POST(req: Request) {
   // streamText is the core function from the Vercel AI SDK
   // It sends the AI's response as a stream so the UI shows it in real time
   const result = streamText({
-    model: githubModel.chat("gpt-4o-mini"),
+    model: google("gemini-3.6-flash"),
+    // This task is a single tool call plus filling out a fixed template, not
+    // deep reasoning, so keep Gemini's default "thinking" pass minimal.
+    // Without this it was taking 30+ seconds per request, which is longer
+    // than maxDuration above and longer than Vercel's Hobby-tier hard cap.
+    providerOptions: {
+      google: {
+        thinkingConfig: { thinkingLevel: "minimal" },
+      },
+    },
     messages: await convertToModelMessages(messages),
 
     system: `You are an internal pre-sales analysis tool for Bluet Oy's sales team.
