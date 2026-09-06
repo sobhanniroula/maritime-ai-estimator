@@ -26,7 +26,7 @@ import path from "path";
 import { getMarineConditions } from "@/tools/marineWeather";
 
 // Vercel Pro allows up to 300s. Set to 30: works on Pro, silently capped to 10 on Hobby.
-// gemini-3.6-flash + one tool call typically completes in 4-8s, so Hobby is fine in practice.
+// gemini-3.1-flash-lite + one tool call typically completes in 2-4s, so Hobby is fine.
 export const maxDuration = 30;
 
 // Set up the AI model using the Google Gemini API.
@@ -37,6 +37,15 @@ export const maxDuration = 30;
 // gap, since Gemini sends each tool call whole in one chunk instead of
 // streaming pieces of it like OpenAI does), which fails strict schema
 // validation and breaks any request that calls a tool.
+//
+// Model choice matters a lot for latency here: the full gemini-3.6-flash
+// works but its "thinking" pass regularly pushed each request past 30s,
+// blowing past Vercel Hobby's 10s hard cap. gemini-3.1-flash-lite responds
+// in 2-4s. gemini-3.5-flash-lite is just as fast but unreliable for this
+// prompt: it repeatedly invented a specific wave-height number out of
+// qualitative words like "calm" instead of using the live API value, even
+// after the system prompt explicitly forbade it. 3.1-flash-lite did not
+// show that problem in testing.
 const google = createGoogleGenerativeAI({
   apiKey: process.env.GEMINI_API_KEY ?? "",
 });
@@ -57,23 +66,14 @@ export async function POST(req: Request) {
   // streamText is the core function from the Vercel AI SDK
   // It sends the AI's response as a stream so the UI shows it in real time
   const result = streamText({
-    model: google("gemini-3.6-flash"),
-    // This task is a single tool call plus filling out a fixed template, not
-    // deep reasoning, so keep Gemini's default "thinking" pass minimal.
-    // Without this it was taking 30+ seconds per request, which is longer
-    // than maxDuration above and longer than Vercel's Hobby-tier hard cap.
-    providerOptions: {
-      google: {
-        thinkingConfig: { thinkingLevel: "minimal" },
-      },
-    },
+    model: google("gemini-3.1-flash-lite"),
     messages: await convertToModelMessages(messages),
 
     system: `You are an internal pre-sales analysis tool for Bluet Oy's sales team.
 Your output is for the salesperson only, never shown directly to the customer.
 
 CRITICAL RULES:
-1. WAVE HEIGHT PRIORITY: If the user message contains a client-provided wave height value, use THAT value for all suitability checks. Show the API-fetched value as "(live API: X.X m)" for reference only. Never flag a site as unsuitable based on API wave height if the client provided a lower value.
+1. WAVE HEIGHT PRIORITY: If the user message contains a client-provided wave height value, use THAT value for all suitability checks. Show the API-fetched value as "(live API: X.X m)" for reference only. Never flag a site as unsuitable based on API wave height if the client provided a lower value. A client-provided value means the user message states an explicit number (e.g., "0.4m waves"). Do NOT treat qualitative words like "calm", "rough", or "sheltered" as an implied number. If the user message does NOT contain an explicit client-provided wave height number, use the API value directly as the primary value and label it "(live API: X.X m)"; do not write "(client-provided)" or invent any other number.
 2. DEPTH PRIORITY AND SUITABILITY:
    - Use depth in this order: (1) client-provided → label "(client-provided)"; (2) EMODnet bathymetric estimate → label "(EMODnet est. - confirm on site)"; (3) unknown → flag for confirmation.
    - depth < 2.0 m → UNSUITABLE (hard threshold)

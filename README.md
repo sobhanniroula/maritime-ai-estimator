@@ -113,7 +113,7 @@ This is what makes the output trustworthy: it's grounded in real data, not guess
 | Framework      | Next.js 15 (App Router)                             |
 | Language       | TypeScript                                          |
 | AI / Streaming | Vercel AI SDK v4                                    |
-| AI Model       | Google Gemini: `gemini-3.6-flash` (free tier)       |
+| AI Model       | Google Gemini: `gemini-3.1-flash-lite` (free tier)  |
 | Map            | React-Leaflet + OpenStreetMap tiles                 |
 | Styling        | Tailwind CSS                                        |
 | Weather Data   | WeatherAPI.com (optional)                           |
