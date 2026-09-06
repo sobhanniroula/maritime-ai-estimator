@@ -120,7 +120,7 @@ This is what makes the output trustworthy: it's grounded in real data, not guess
 
 ---
 
-## Pitch Day Tips:
+## Pitch Day Tips
 
 - **`knowledge/products.json`** is designed to be edited live. During the morning workshop when the Bluet founders tell you their real constraints, update this file and the AI will immediately reflect those changes.
 - The AI fallback (no WeatherAPI key) uses accurate Baltic Sea seasonal averages, safe to demo offline.
